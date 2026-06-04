@@ -25,6 +25,7 @@ export const actions: Actions = {
 			path: '/',
 			httpOnly: true,
 			sameSite: 'lax',
+			secure: process.env.HTTPS === '1',
 			maxAge: 60 * 60 * 24 * 30
 		});
 

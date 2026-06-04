@@ -27,6 +27,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-change_this_in_production}
       UPLOADS_DIR: /app/uploads
       NODE_ENV: production
+      HTTPS: '0'
     volumes:
       - uploads:/app/uploads
 

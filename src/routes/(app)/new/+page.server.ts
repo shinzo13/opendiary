@@ -1,4 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
+import { and, eq } from 'drizzle-orm';
 import { db, entries } from '$lib/server/db';
 import { saveUpload } from '$lib/server/uploads';
 import type { Actions } from './$types';
@@ -14,6 +15,14 @@ export const actions: Actions = {
 		if (!image || image.size === 0) return fail(400, { error: 'photo is required' });
 		if (!description) return fail(400, { error: 'description is required' });
 		if (!date) return fail(400, { error: 'date is required' });
+
+		const [existing] = await db
+			.select({ id: entries.id })
+			.from(entries)
+			.where(and(eq(entries.userId, locals.userId!), eq(entries.date, date)))
+			.limit(1);
+
+		if (existing) return fail(400, { error: 'an entry for this date already exists' });
 
 		const imageFilename = await saveUpload(image);
 

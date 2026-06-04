@@ -28,6 +28,7 @@ services:
       UPLOADS_DIR: /app/uploads
       NODE_ENV: production
       HTTPS: '0'
+      BODY_SIZE_LIMIT: '25M'
     volumes:
       - uploads:/app/uploads
 

@@ -17,6 +17,7 @@ export const entries = pgTable('entries', {
 	date: date('date').notNull(),
 	description: text('description').notNull(),
 	body: text('body').notNull().default(''),
+	mood: text('mood'),
 	imageFilename: text('image_filename').notNull(),
 	createdAt: timestamp('created_at').defaultNow()
 }, (t) => ({

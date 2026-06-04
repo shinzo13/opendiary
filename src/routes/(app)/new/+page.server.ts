@@ -10,6 +10,7 @@ export const actions: Actions = {
 		const date = data.get('date') as string;
 		const description = (data.get('description') as string)?.trim();
 		const body = (data.get('body') as string)?.trim() ?? '';
+		const mood = ((data.get('mood') as string) || '').trim() || null;
 		const image = data.get('image') as File;
 
 		if (!image || image.size === 0) return fail(400, { error: 'photo is required' });
@@ -31,6 +32,7 @@ export const actions: Actions = {
 			date,
 			description,
 			body,
+			mood,
 			imageFilename
 		});
 

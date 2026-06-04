@@ -2,7 +2,9 @@ import { db, entries } from '$lib/server/db';
 import { eq, desc } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals, url }) => {
+export const load: PageServerLoad = async ({ locals, url, parent }) => {
+	await parent();
+
 	const rows = await db
 		.select()
 		.from(entries)

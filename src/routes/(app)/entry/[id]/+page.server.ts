@@ -4,7 +4,8 @@ import { deleteUpload } from '$lib/server/uploads';
 import { eq, and } from 'drizzle-orm';
 import type { PageServerLoad, Actions } from './$types';
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load: PageServerLoad = async ({ params, locals, parent }) => {
+	await parent();
 	const [entry] = await db
 		.select()
 		.from(entries)

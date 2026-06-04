@@ -192,4 +192,31 @@
 	.field-body::placeholder { color: var(--surface2); }
 
 	.error { font-size: 13px; color: #ff6b6b; margin-top: 4px; }
+
+	/* ── desktop ── */
+	@media (min-width: 768px) {
+		header, form {
+			width: 100%;
+			max-width: 560px;
+			margin: 0 auto;
+		}
+
+		.save { font-size: 16px; }
+
+		.field-date { font-size: 14px; }
+		.field-title { font-size: 24px; }
+		.field-body { font-size: 16px; }
+
+		.photo-btn.has-image {
+			aspect-ratio: auto;
+			max-height: 60vh;
+		}
+
+		.photo-btn.has-image img {
+			height: auto;
+			max-height: 60vh;
+			object-fit: contain;
+			background: #000;
+		}
+	}
 </style>

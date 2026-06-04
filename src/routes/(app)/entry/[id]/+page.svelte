@@ -60,6 +60,8 @@
 	header {
 		position: absolute;
 		top: 0; left: 0; right: 0;
+		max-width: 640px;
+		margin: 0 auto;
 		z-index: 10;
 		display: flex;
 		align-items: center;
@@ -132,4 +134,31 @@
 
 	.btn-cancel { background: var(--surface2); color: var(--text); }
 	.btn-delete { background: #ff6b6b; color: #fff; }
+
+	/* ── desktop ── */
+	@media (min-width: 768px) {
+		.page {
+			max-width: 640px;
+			margin: 0 auto;
+		}
+
+		.hero {
+			aspect-ratio: auto;
+			background: #000;
+			border-radius: 0 0 var(--radius) var(--radius);
+		}
+
+		.hero img {
+			width: 100%;
+			height: auto;
+			max-height: 70vh;
+			object-fit: contain;
+		}
+
+		article { padding: 32px 24px 64px; }
+
+		time { font-size: 14px; }
+		h1 { font-size: 26px; }
+		.body { font-size: 17px; }
+	}
 </style>

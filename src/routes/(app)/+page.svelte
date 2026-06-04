@@ -280,4 +280,46 @@
 	}
 
 	.menu-item.danger { color: #ff6b6b; }
+
+	/* ── desktop ── */
+	@media (min-width: 768px) {
+		header {
+			max-width: 720px;
+			margin: 0 auto;
+			padding: 20px 24px;
+		}
+
+		.logo { font-size: 22px; }
+
+		.add-btn, .avatar-btn { width: 44px; height: 44px; }
+
+		main { padding: 40px 0 80px; }
+
+		.timeline {
+			max-width: 720px;
+			margin: 0 auto;
+		}
+
+		.row { padding: 18px 0; }
+
+		.card {
+			gap: 16px;
+			padding: 8px 20px;
+			max-width: calc(360px - 20px);
+		}
+
+		.thumb { width: 96px; height: 96px; border-radius: 14px; }
+
+		time { font-size: 13px; }
+		p { font-size: 15px; }
+
+		.profile-sheet {
+			max-width: 400px;
+			left: 50%;
+			right: auto;
+			transform: translateX(-50%);
+			border-radius: 20px;
+			bottom: 24px;
+		}
+	}
 </style>

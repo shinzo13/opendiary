@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-	<title>OpenDiary</title>
+	<title>opendiary</title>
 </svelte:head>
 
 {@render children()}

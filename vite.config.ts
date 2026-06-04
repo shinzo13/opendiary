@@ -8,8 +8,8 @@ export default defineConfig({
 		VitePWA({
 			registerType: 'autoUpdate',
 			manifest: {
-				name: 'OpenDiary',
-				short_name: 'OpenDiary',
+				name: 'opendiary',
+				short_name: 'opendiary',
 				description: 'Personal visual diary',
 				theme_color: '#1a1a1a',
 				background_color: '#1a1a1a',

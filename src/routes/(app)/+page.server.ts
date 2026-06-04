@@ -9,7 +9,7 @@ export const load: PageServerLoad = async ({ locals, url, parent }) => {
 		.select()
 		.from(entries)
 		.where(eq(entries.userId, locals.userId!))
-		.orderBy(desc(entries.createdAt));
+		.orderBy(desc(entries.date), desc(entries.createdAt));
 
 	return { entries: rows, welcome: url.searchParams.has('welcome') };
 };

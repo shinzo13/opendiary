@@ -23,7 +23,7 @@
 		</div>
 
 		<div class="chips">
-			<span class="chip"><i></i>self-hosted</span>
+			<span class="chip"><i></i>free</span>
 			<span class="chip"><i></i>open source</span>
 			<span class="chip"><i></i>yours, forever</span>
 		</div>
@@ -32,14 +32,17 @@
 	<!-- decorative timeline motif (desktop only) -->
 	<div class="motif" aria-hidden="true">
 		<div class="spine"></div>
-		<div class="node n1"></div>
-		<div class="node n2"></div>
-		<div class="node n3"></div>
 		<div class="plus">
 			<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
 				<line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
 			</svg>
 		</div>
+		<div class="tile t1"></div>
+		<div class="node n1"></div>
+		<div class="tile t2"></div>
+		<div class="node n2"></div>
+		<div class="tile t3"></div>
+		<div class="node n3"></div>
 	</div>
 </main>
 
@@ -152,7 +155,7 @@
 		.motif {
 			display: block;
 			position: relative;
-			height: 340px;
+			height: 420px;
 		}
 		.spine {
 			position: absolute;
@@ -160,6 +163,28 @@
 			width: 2px;
 			transform: translateX(-50%);
 			background: linear-gradient(var(--accent), color-mix(in oklch, var(--accent) 25%, transparent) 70%, transparent);
+		}
+
+		.tile {
+			position: absolute;
+			width: 78px; height: 78px;
+			border-radius: 16px;
+			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+		}
+		.t1 {
+			top: calc(32% - 39px);
+			left: calc(50% + 26px);
+			background: radial-gradient(120% 90% at 30% 18%, #bcd2e8 0%, transparent 52%), radial-gradient(110% 90% at 75% 92%, #5a7a52 0%, transparent 60%), linear-gradient(165deg, #8fae8a, #3f5440);
+		}
+		.t2 {
+			top: calc(56% - 39px);
+			right: calc(50% + 26px);
+			background: radial-gradient(110% 90% at 35% 22%, #f1d29a 0%, transparent 55%), radial-gradient(100% 90% at 82% 92%, #6e4424 0%, transparent 58%), linear-gradient(160deg, #b58452, #503018);
+		}
+		.t3 {
+			top: calc(80% - 39px);
+			left: calc(50% + 26px);
+			background: radial-gradient(120% 100% at 65% 22%, #f7b06a 0%, transparent 52%), radial-gradient(110% 100% at 25% 92%, #b15a7a 0%, transparent 58%), linear-gradient(165deg, #e58a6a, #7a3a55);
 		}
 		.plus {
 			position: absolute;

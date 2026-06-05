@@ -58,7 +58,8 @@
 		max-width: 620px;
 		display: flex;
 		flex-direction: column;
-		align-items: flex-start;
+		align-items: center;
+		text-align: center;
 	}
 
 	.eyebrow {
@@ -83,7 +84,7 @@
 		font-size: clamp(17px, 4.4vw, 23px);
 		line-height: 1.5;
 		color: var(--dim);
-		margin: 22px 0 34px;
+		margin: 22px auto 34px;
 		max-width: 30ch;
 	}
 	.tagline em { color: var(--text); font-style: italic; }
@@ -91,8 +92,8 @@
 	.actions {
 		display: flex;
 		flex-wrap: wrap;
+		justify-content: center;
 		gap: 12px;
-		width: 100%;
 	}
 
 	.btn {
@@ -118,6 +119,7 @@
 	.chips {
 		display: flex;
 		flex-wrap: wrap;
+		justify-content: center;
 		gap: 18px;
 		margin-top: 30px;
 	}
@@ -143,22 +145,25 @@
 			gap: 60px;
 			padding: 32px 48px;
 		}
+		.hero { align-items: flex-start; text-align: left; }
+		.tagline { margin: 22px 0 34px; }
+		.actions, .chips { justify-content: flex-start; }
+
 		.motif {
 			display: block;
 			position: relative;
-			align-self: stretch;
-			min-height: 420px;
+			height: 340px;
 		}
 		.spine {
 			position: absolute;
-			left: 50%; top: 30px; bottom: 30px;
+			left: 50%; top: 28px; bottom: 6px;
 			width: 2px;
 			transform: translateX(-50%);
 			background: linear-gradient(var(--accent), color-mix(in oklch, var(--accent) 25%, transparent) 70%, transparent);
 		}
 		.plus {
 			position: absolute;
-			top: 6px; left: 50%;
+			top: 0; left: 50%;
 			transform: translateX(-50%);
 			width: 50px; height: 50px;
 			border-radius: 50%;
@@ -177,8 +182,8 @@
 			transform: translateX(-50%);
 			box-shadow: 0 0 12px color-mix(in oklch, var(--accent) 60%, transparent);
 		}
-		.node.n1 { top: 34%; }
+		.node.n1 { top: 32%; }
 		.node.n2 { top: 56%; }
-		.node.n3 { top: 78%; }
+		.node.n3 { top: 80%; }
 	}
 </style>

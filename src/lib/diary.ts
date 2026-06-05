@@ -15,7 +15,11 @@ export const MOODS: Record<string, Mood> = {
 	angry: { label: 'angry', color: '#cf5043' },
 	apathetic: { label: 'apathetic', color: '#8a8f96' },
 	bored: { label: 'bored', color: '#6f7d82' },
-	exhausted: { label: 'exhausted', color: '#9a8f7a' }
+	exhausted: { label: 'exhausted', color: '#9a8f7a' },
+	drunk: { label: 'drunk', color: '#c06bd0' },
+	high: { label: 'high', color: '#6fbf73' },
+	hungover: { label: 'hungover', color: '#8f7a5a' },
+	wired: { label: 'wired', color: '#45b8c4' }
 };
 
 // moods offered when creating an entry (full spectrum)
@@ -31,7 +35,11 @@ export const MOOD_CHOICES = [
 	'angry',
 	'apathetic',
 	'bored',
-	'exhausted'
+	'exhausted',
+	'drunk',
+	'high',
+	'hungover',
+	'wired'
 ] as const;
 
 export const MONTHS = [

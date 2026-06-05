@@ -95,7 +95,14 @@
 	}
 
 	.hero { width: 100%; aspect-ratio: 1/1; overflow: hidden; background: var(--surface); }
-	.hero img { width: 100%; height: 100%; object-fit: cover; }
+	.hero img {
+		width: 100%; height: 100%; object-fit: cover;
+		animation: hero-reveal 0.6s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+	}
+
+	@keyframes hero-reveal {
+		from { opacity: 0; transform: scale(1.06); }
+	}
 
 	article {
 		flex: 1;
@@ -103,6 +110,22 @@
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
+	}
+
+	article > * {
+		animation: entry-rise 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+	}
+	time { animation-delay: 0.16s; }
+	h1 { animation-delay: 0.23s; }
+	.mood { animation-delay: 0.3s; }
+	.body { animation-delay: 0.37s; }
+
+	@keyframes entry-rise {
+		from { opacity: 0; transform: translateY(12px); }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero img, article > * { animation: none; }
 	}
 
 	time { font-size: 12px; color: var(--accent); font-weight: 700; text-transform: lowercase; }

@@ -6,7 +6,7 @@
 	let visible = $state(true);
 
 	onMount(() => {
-		const t = setTimeout(() => (visible = false), variant === 'error' ? 4200 : 3200);
+		const t = setTimeout(() => (visible = false), variant === 'error' ? 3180 : 3200);
 		return () => clearTimeout(t);
 	});
 </script>
@@ -58,7 +58,7 @@
 		background: #e5484d;
 		color: #fff;
 		animation: in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both,
-			out 0.3s ease 3.9s both;
+			out 0.18s ease 3s both;
 	}
 
 	.toast svg { flex: none; }

@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = ({ locals }) => {
-	if (locals.userId) redirect(302, '/');
+	if (locals.userId) redirect(302, '/home');
 };
 
 export const actions: Actions = {
@@ -29,6 +29,6 @@ export const actions: Actions = {
 			maxAge: 60 * 60 * 24 * 30
 		});
 
-		redirect(302, '/');
+		redirect(302, '/home');
 	}
 };

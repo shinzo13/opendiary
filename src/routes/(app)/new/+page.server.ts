@@ -36,6 +36,6 @@ export const actions: Actions = {
 			imageFilename
 		});
 
-		redirect(302, '/');
+		redirect(302, '/home');
 	}
 };

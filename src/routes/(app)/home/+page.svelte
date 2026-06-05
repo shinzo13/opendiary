@@ -16,7 +16,7 @@
 	let panelsOpen = $state(false);
 
 	$effect(() => {
-		if (data.welcome) replaceState('/', {});
+		if (data.welcome) replaceState('/home', {});
 	});
 </script>
 

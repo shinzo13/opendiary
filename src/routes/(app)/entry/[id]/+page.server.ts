@@ -29,6 +29,6 @@ export const actions: Actions = {
 		await db.delete(entries).where(eq(entries.id, params.id));
 		await deleteUpload(entry.imageFilename);
 
-		redirect(302, '/');
+		redirect(302, '/home');
 	}
 };

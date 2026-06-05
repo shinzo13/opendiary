@@ -13,11 +13,11 @@
 		<p class="empty">no moods logged yet</p>
 	{:else}
 		<div class="rows">
-			{#each counts as [m, n] (m)}
+			{#each counts as [m, n], i (m)}
 				<div class="row">
 					<span class="lbl">{MOODS[m].label}</span>
 					<div class="track">
-						<div class="bar" style="width: {(n / max) * 100}%; background: {MOODS[m].color}"></div>
+						<div class="bar" style="width: {(n / max) * 100}%; background: {MOODS[m].color}; animation-delay: {i * 65}ms"></div>
 						<span class="cnt">{n}</span>
 					</div>
 				</div>
@@ -64,6 +64,16 @@
 		min-width: 4px;
 		border-radius: 5px;
 		transition: width 0.3s cubic-bezier(0.2, 0.7, 0.3, 1);
+		transform-origin: left;
+		animation: bar-grow 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+	}
+
+	@keyframes bar-grow {
+		from { transform: scaleX(0); }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.bar { animation: none; }
 	}
 	.cnt { font-size: 11px; font-weight: 700; color: var(--dim); flex: none; }
 </style>

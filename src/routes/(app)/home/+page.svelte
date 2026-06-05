@@ -69,7 +69,7 @@
 						</a>
 						{#each entries as entry, i (entry.id)}
 							{@const side = i % 2 === 0 ? 'left' : 'right'}
-							<div class="row {side}">
+							<div class="row {side}" style="--d: {Math.min(i, 12) * 55}ms">
 								{#if side === 'left'}
 									<div class="spacer">
 										<a href="/entry/{entry.id}" class="card">
@@ -266,6 +266,16 @@
 		position: relative;
 		z-index: 1;
 		padding: 12px 0;
+		animation: row-rise 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+		animation-delay: var(--d, 0ms);
+	}
+
+	@keyframes row-rise {
+		from { opacity: 0; transform: translateY(14px); }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.row { animation: none; }
 	}
 
 	.node {

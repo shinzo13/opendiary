@@ -65,6 +65,21 @@
 		text-align: center;
 	}
 
+	.hero > * { animation: hero-rise 0.6s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+	.eyebrow { animation-delay: 0.05s; }
+	.wordmark { animation-delay: 0.13s; }
+	.tagline { animation-delay: 0.22s; }
+	.actions { animation-delay: 0.31s; }
+	.chips { animation-delay: 0.4s; }
+
+	@keyframes hero-rise {
+		from { opacity: 0; transform: translateY(16px); }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero > *, .tile { animation: none; }
+	}
+
 	.eyebrow {
 		font-size: 12px;
 		font-weight: 700;
@@ -170,6 +185,14 @@
 			width: 78px; height: 78px;
 			border-radius: 16px;
 			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+			animation: tile-pop 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+		}
+		.t1 { animation-delay: 0.5s; }
+		.t2 { animation-delay: 0.62s; }
+		.t3 { animation-delay: 0.74s; }
+
+		@keyframes tile-pop {
+			from { opacity: 0; transform: translateY(10px) scale(0.92); }
 		}
 		.t1 {
 			top: calc(32% - 39px);

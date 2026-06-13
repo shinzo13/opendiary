@@ -393,7 +393,7 @@
 	/* ── mobile insights drawer ── */
 	.panels-toggle {
 		position: absolute;
-		top: 76px;
+		top: 94px;
 		left: 12px;
 		z-index: 25;
 		display: inline-flex;

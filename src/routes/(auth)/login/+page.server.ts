@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { db, users } from '$lib/server/db';
-import { verifyPassword, createToken } from '$lib/server/auth';
+import { verifyPassword, setSessionCookie, setPendingEmail } from '$lib/server/auth';
 import { eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -21,14 +21,12 @@ export const actions: Actions = {
 			return fail(400, { error: 'invalid email or password' });
 		}
 
-		cookies.set('token', createToken(user.id), {
-			path: '/',
-			httpOnly: true,
-			sameSite: 'lax',
-			secure: process.env.HTTPS === '1',
-			maxAge: 60 * 60 * 24 * 30
-		});
+		if (!user.emailVerified) {
+			setPendingEmail(cookies, email);
+			redirect(303, '/verify-pending');
+		}
 
+		setSessionCookie(cookies, user.id);
 		redirect(302, '/home');
 	}
 };

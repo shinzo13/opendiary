@@ -27,8 +27,11 @@ services:
       JWT_SECRET: ${JWT_SECRET:-change_this_in_production}
       UPLOADS_DIR: /app/uploads
       NODE_ENV: production
-      HTTPS: '0'
+      HTTPS: '1'
       BODY_SIZE_LIMIT: '25M'
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      MAIL_FROM: ${MAIL_FROM:-opendiary@shinzo.me}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://opendiary.shinzo.me}
     volumes:
       - uploads:/app/uploads
 

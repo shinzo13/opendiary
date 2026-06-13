@@ -1,6 +1,8 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { db, users } from '$lib/server/db';
-import { hashPassword, createToken } from '$lib/server/auth';
+import { hashPassword, setPendingEmail } from '$lib/server/auth';
+import { createVerificationToken } from '$lib/server/verification';
+import { sendVerificationEmail } from '$lib/server/mail';
 import { eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -25,14 +27,15 @@ export const actions: Actions = {
 			.values({ email, passwordHash: await hashPassword(password) })
 			.returning();
 
-		cookies.set('token', createToken(user.id), {
-			path: '/',
-			httpOnly: true,
-			sameSite: 'lax',
-			secure: process.env.HTTPS === '1',
-			maxAge: 60 * 60 * 24 * 30
-		});
+		const token = await createVerificationToken(user.id);
+		try {
+			await sendVerificationEmail(email, token);
+		} catch (e) {
+			console.error('verification email failed', e);
+			return fail(500, { error: 'could not send the confirmation email — try again' });
+		}
 
-		redirect(302, '/home?welcome=1');
+		setPendingEmail(cookies, email);
+		redirect(303, '/verify-pending');
 	}
 };

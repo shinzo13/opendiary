@@ -16,6 +16,7 @@
 	let zoom = $state(1);
 	let tx = $state(0);
 	let ty = $state(0);
+	let rot = $state(0);
 	let ready = $state(false);
 
 	const s = $derived(baseScale * zoom);
@@ -25,10 +26,17 @@
 	const top = $derived(V / 2 + ty - dispH / 2);
 
 	function clampPan() {
-		const maxX = Math.max(0, (nw * s - V) / 2);
-		const maxY = Math.max(0, (nh * s - V) / 2);
+		const visW = rot % 180 === 0 ? nw * s : nh * s;
+		const visH = rot % 180 === 0 ? nh * s : nw * s;
+		const maxX = Math.max(0, (visW - V) / 2);
+		const maxY = Math.max(0, (visH - V) / 2);
 		tx = Math.min(maxX, Math.max(-maxX, tx));
 		ty = Math.min(maxY, Math.max(-maxY, ty));
+	}
+
+	function rotate() {
+		rot = (rot + 90) % 360;
+		clampPan();
 	}
 
 	function onImgLoad() {
@@ -39,6 +47,7 @@
 		zoom = 1;
 		tx = 0;
 		ty = 0;
+		rot = 0;
 		clampPan();
 		ready = true;
 	}
@@ -82,7 +91,11 @@
 		if (!ctx) return;
 		ctx.fillStyle = '#000';
 		ctx.fillRect(0, 0, OUT, OUT);
-		ctx.drawImage(imgEl, left * f, top * f, dispW * f, dispH * f);
+		const cx = (V / 2 + tx) * f;
+		const cy = (V / 2 + ty) * f;
+		ctx.translate(cx, cy);
+		ctx.rotate((rot * Math.PI) / 180);
+		ctx.drawImage(imgEl, (-dispW * f) / 2, (-dispH * f) / 2, dispW * f, dispH * f);
 		canvas.toBlob(
 			(blob) => {
 				if (blob) onconfirm(new File([blob], 'photo.jpg', { type: 'image/jpeg' }));
@@ -114,21 +127,29 @@
 				onload={onImgLoad}
 				draggable="false"
 				class:ready
-				style="left: {left}px; top: {top}px; width: {dispW}px; height: {dispH}px;"
+				style="left: {left}px; top: {top}px; width: {dispW}px; height: {dispH}px; transform: rotate({rot}deg);"
 			/>
 			<div class="frame-grid"></div>
 		</div>
 
-		<input
-			class="zoom"
-			type="range"
-			min="1"
-			max="4"
-			step="0.01"
-			value={zoom}
-			oninput={onZoom}
-			aria-label="zoom"
-		/>
+		<div class="tools">
+			<button type="button" class="rotate" onclick={rotate} aria-label="rotate" title="rotate">
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<polyline points="23 4 23 10 17 10" />
+					<path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+				</svg>
+			</button>
+			<input
+				class="zoom"
+				type="range"
+				min="1"
+				max="4"
+				step="0.01"
+				value={zoom}
+				oninput={onZoom}
+				aria-label="zoom"
+			/>
+		</div>
 
 		<div class="crop-actions">
 			<button type="button" class="btn ghost" onclick={oncancel}>cancel</button>
@@ -204,9 +225,30 @@
 		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
 	}
 
-	.zoom {
-		width: 100%;
+	.tools {
+		display: flex;
+		align-items: center;
+		gap: 14px;
 		margin: 18px 0 4px;
+	}
+
+	.rotate {
+		flex: none;
+		display: grid;
+		place-items: center;
+		width: 38px;
+		height: 38px;
+		border-radius: 10px;
+		border: 1px solid var(--line);
+		background: transparent;
+		color: var(--text);
+		transition: 0.15s;
+	}
+	.rotate:hover { border-color: var(--accent); color: var(--accent); }
+	.rotate:active { transform: scale(0.92); }
+
+	.zoom {
+		flex: 1;
 		accent-color: var(--accent);
 	}
 

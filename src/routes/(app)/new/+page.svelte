@@ -15,14 +15,27 @@
 	let mood = $state<string | null>(null);
 	let fileInput: HTMLInputElement;
 
+	function loadImageFile(file: File) {
+		if (rawSrc) URL.revokeObjectURL(rawSrc);
+		rawSrc = URL.createObjectURL(file);
+		cropping = true;
+	}
+
 	function onFileChange(e: Event) {
 		const input = e.target as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file) return;
-		if (rawSrc) URL.revokeObjectURL(rawSrc);
-		rawSrc = URL.createObjectURL(file);
-		cropping = true;
+		loadImageFile(file);
 		input.value = ''; // allow re-picking the same file
+	}
+
+	function onPaste(e: ClipboardEvent) {
+		const file = [...(e.clipboardData?.items ?? [])]
+			.find((i) => i.type.startsWith('image/'))
+			?.getAsFile();
+		if (!file) return;
+		e.preventDefault();
+		loadImageFile(file);
 	}
 
 	function onCropConfirm(file: File) {
@@ -38,6 +51,8 @@
 		rawSrc = null;
 	}
 </script>
+
+<svelte:window onpaste={onPaste} />
 
 <div class="page">
 	<header>

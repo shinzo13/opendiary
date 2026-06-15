@@ -3,10 +3,10 @@
 
 	let { children } = $props();
 
-	// Chrome на Android игнорирует -webkit-touch-callout: long-press по картинке
-	// открывает нативное меню через событие contextmenu. глушим его везде, кроме
-	// полей ввода (там нужно меню вставки).
+	// только в установленной PWA: глушим long-press контекстное меню (Chrome на
+	// Android игнорирует -webkit-touch-callout). в обычном браузере не трогаем.
 	onMount(() => {
+		if (!window.matchMedia('(display-mode: standalone)').matches) return;
 		const onContextMenu = (e: Event) => {
 			const t = e.target as HTMLElement | null;
 			if (t?.closest('input, textarea, [contenteditable="true"]')) return;
@@ -35,29 +35,32 @@
 		box-sizing: border-box;
 		margin: 0;
 		padding: 0;
-		/* убрать нативную «вебовость» — чтобы PWA ощущалась как приложение */
-		-webkit-tap-highlight-color: transparent;
-		-webkit-touch-callout: none;
-		user-select: none;
-		-webkit-user-select: none;
 	}
 
-	/* поля ввода и явно выделяемое — оставить selectable */
-	:global(input, textarea, [contenteditable='true'], .selectable) {
-		user-select: text;
-		-webkit-user-select: text;
-		-webkit-touch-callout: default;
-	}
+	/* native-feel правки только в установленной PWA — в браузере остаётся
+	   обычное веб-поведение (выделение, контекстное меню, overscroll) */
+	@media (display-mode: standalone) {
+		:global(*, *::before, *::after) {
+			-webkit-tap-highlight-color: transparent;
+			-webkit-touch-callout: none;
+			user-select: none;
+			-webkit-user-select: none;
+		}
 
-	/* картинки нельзя таскать/вызывать по ним меню */
-	:global(img) {
-		-webkit-user-drag: none;
-	}
+		:global(input, textarea, [contenteditable='true'], .selectable) {
+			user-select: text;
+			-webkit-user-select: text;
+			-webkit-touch-callout: default;
+		}
 
-	/* убрать pull-to-refresh и резиновый overscroll */
-	:global(html, body) {
-		overscroll-behavior: none;
-		-webkit-overflow-scrolling: touch;
+		:global(img) {
+			-webkit-user-drag: none;
+		}
+
+		:global(html, body) {
+			overscroll-behavior: none;
+			-webkit-overflow-scrolling: touch;
+		}
 	}
 
 	:global(:root) {

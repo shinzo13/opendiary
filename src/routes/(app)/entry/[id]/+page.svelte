@@ -1,23 +1,10 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { afterNavigate } from '$app/navigation';
 	import { MOODS } from '$lib/diary';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 	let confirmDelete = $state(false);
-	let cameFromApp = $state(false);
-
-	afterNavigate((nav) => {
-		cameFromApp = nav.from?.route.id != null;
-	});
-
-	function goBack(e: MouseEvent) {
-		if (cameFromApp) {
-			e.preventDefault();
-			history.back();
-		}
-	}
 	const mood = $derived(data.entry.mood && MOODS[data.entry.mood] ? MOODS[data.entry.mood] : null);
 
 	function formatDate(iso: string) {
@@ -28,7 +15,7 @@
 
 <div class="page">
 	<header>
-		<a href="/home" class="back-btn" onclick={goBack}>
+		<a href="/home" class="back-btn">
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
 				<polyline points="15 18 9 12 15 6" />
 			</svg>

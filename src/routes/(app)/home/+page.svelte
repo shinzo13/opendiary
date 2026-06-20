@@ -1,4 +1,9 @@
+<script module lang="ts">
+	let savedScroll = 0;
+</script>
+
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { replaceState } from '$app/navigation';
 	import Toast from '$lib/components/Toast.svelte';
 	import StatsPanel from '$lib/components/StatsPanel.svelte';
@@ -14,6 +19,11 @@
 
 	let menuOpen = $state(false);
 	let panelsOpen = $state(false);
+	let timelineEl = $state<HTMLElement>();
+
+	onMount(() => {
+		if (timelineEl && savedScroll) timelineEl.scrollTop = savedScroll;
+	});
 
 	$effect(() => {
 		if (data.welcome) replaceState('/home', {});
@@ -58,7 +68,7 @@
 					<div class="cell wide"><LookingBack {entries} /></div>
 				</aside>
 
-				<div class="timeline-wrap">
+				<div class="timeline-wrap" bind:this={timelineEl} onscroll={() => (savedScroll = timelineEl?.scrollTop ?? 0)}>
 					<div class="timeline">
 						<div class="spine"></div>
 						<a href="/new" class="add-node" aria-label="new entry">

@@ -1,5 +1,6 @@
 <script module lang="ts">
 	let savedScroll = 0;
+	let hasAnimated = false;
 </script>
 
 <script lang="ts">
@@ -16,6 +17,9 @@
 	let { data }: { data: PageData } = $props();
 
 	const entries = $derived(data.entries as Entry[]);
+
+	const animateIn = !hasAnimated;
+	hasAnimated = true;
 
 	let menuOpen = $state(false);
 	let panelsOpen = $state(false);
@@ -69,7 +73,7 @@
 				</aside>
 
 				<div class="timeline-wrap" bind:this={timelineEl} onscroll={() => (savedScroll = timelineEl?.scrollTop ?? 0)}>
-					<div class="timeline">
+					<div class="timeline" class:no-anim={!animateIn}>
 						<div class="spine"></div>
 						<a href="/new" class="add-node" aria-label="new entry">
 							<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
@@ -283,6 +287,8 @@
 	@keyframes row-rise {
 		from { opacity: 0; transform: translateY(14px); }
 	}
+
+	.no-anim .row { animation: none; }
 
 	@media (prefers-reduced-motion: reduce) {
 		.row { animation: none; }

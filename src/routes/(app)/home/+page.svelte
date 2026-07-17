@@ -107,7 +107,6 @@
 													<img class="cover" src={entry.trackCover} alt="" />
 												{/if}
 												<div class="tmeta">
-													<span class="tnote">♪</span>
 													<span class="ttitle">{entry.trackTitle}</span>
 													<span class="tartist">{entry.trackArtist}</span>
 												</div>
@@ -122,7 +121,6 @@
 													<img class="cover" src={entry.trackCover} alt="" />
 												{/if}
 												<div class="tmeta">
-													<span class="tnote">♪</span>
 													<span class="ttitle">{entry.trackTitle}</span>
 													<span class="tartist">{entry.trackArtist}</span>
 												</div>
@@ -347,8 +345,8 @@
 
 	.cover {
 		flex-shrink: 0;
-		width: 32px; height: 32px;
-		border-radius: 8px;
+		width: 26px; height: 26px;
+		border-radius: 7px;
 		object-fit: cover;
 		background: var(--card);
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
@@ -358,10 +356,8 @@
 	.row.left .tmeta  { text-align: left; align-items: flex-start; }
 	.row.right .tmeta { text-align: right; align-items: flex-end; }
 
-	.tnote { font-size: 9.5px; color: var(--accent); }
-
 	.ttitle {
-		font-size: 11px;
+		font-size: 10px;
 		font-weight: 600;
 		line-height: 1.3;
 		display: -webkit-box;
@@ -372,7 +368,7 @@
 	}
 
 	.tartist {
-		font-size: 10px;
+		font-size: 9.5px;
 		color: var(--dim);
 		white-space: nowrap;
 		overflow: hidden;
@@ -567,10 +563,10 @@
 		.thumb { width: 110px; height: 110px; border-radius: 16px; }
 		time { font-size: 14px; }
 		p { font-size: 16px; }
-		.track { gap: 10px; max-width: 260px; }
-		.cover { width: 48px; height: 48px; border-radius: 10px; }
-		.ttitle { font-size: 12px; }
-		.tartist { font-size: 11px; }
+		.track { gap: 9px; max-width: 230px; }
+		.cover { width: 38px; height: 38px; border-radius: 9px; }
+		.ttitle { font-size: 11px; }
+		.tartist { font-size: 10px; }
 
 		.profile-sheet {
 			max-width: 400px;

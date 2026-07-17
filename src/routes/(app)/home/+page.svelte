@@ -12,6 +12,7 @@
 	import MoodChart from '$lib/components/MoodChart.svelte';
 	import LookingBack from '$lib/components/LookingBack.svelte';
 	import { MOODS, fmtShort, type Entry } from '$lib/diary';
+	import { loadPrefs } from '$lib/prefs';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -21,11 +22,12 @@
 	const animateIn = !hasAnimated;
 	hasAnimated = true;
 
-	let menuOpen = $state(false);
 	let panelsOpen = $state(false);
+	let showTracks = $state(false);
 	let timelineEl = $state<HTMLElement>();
 
 	onMount(() => {
+		showTracks = loadPrefs().showTracks;
 		if (timelineEl && savedScroll) timelineEl.scrollTop = savedScroll;
 	});
 
@@ -42,12 +44,12 @@
 	<header>
 		<span class="logo">opendiary<span class="dot">.</span></span>
 		<div class="header-right">
-			<button class="avatar-btn" onclick={() => (menuOpen = true)} aria-label="profile">
+			<a class="avatar-btn" href="/settings" aria-label="settings">
 				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-					<circle cx="12" cy="8" r="4" />
-					<path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+					<circle cx="12" cy="12" r="3" />
+					<path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33h.01a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51h.01a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v.01a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" />
 				</svg>
-			</button>
+			</a>
 		</div>
 	</header>
 
@@ -101,7 +103,7 @@
 									</div>
 									<div class="node"></div>
 									<div class="spacer track-side">
-										{#if entry.trackTitle}
+										{#if showTracks && entry.trackTitle}
 											<div class="track">
 												{#if entry.trackCover}
 													<img class="cover" src={entry.trackCover} alt="" />
@@ -115,7 +117,7 @@
 									</div>
 								{:else}
 									<div class="spacer track-side">
-										{#if entry.trackTitle}
+										{#if showTracks && entry.trackTitle}
 											<div class="track">
 												{#if entry.trackCover}
 													<img class="cover" src={entry.trackCover} alt="" />
@@ -172,23 +174,6 @@
 		{/if}
 	</main>
 </div>
-
-<!-- меню профиля -->
-{#if menuOpen}
-	<div class="overlay" role="presentation" onclick={() => (menuOpen = false)}></div>
-	<div class="profile-sheet">
-		<div class="profile-email">{data.user.email}</div>
-		<div class="divider"></div>
-		<a href="/logout" class="menu-item danger">
-			<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-				<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
-				<polyline points="16 17 21 12 16 7" />
-				<line x1="21" y1="12" x2="9" y2="12" />
-			</svg>
-			sign out
-		</a>
-	</div>
-{/if}
 
 <style>
 	.page { position: relative; display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
@@ -431,50 +416,6 @@
 	}
 	.mood i { width: 7px; height: 7px; border-radius: 50%; }
 
-	/* ── профиль ── */
-
-	.overlay {
-		position: fixed; inset: 0;
-		background: rgba(0, 0, 0, 0.5);
-		z-index: 50;
-	}
-
-	.profile-sheet {
-		position: fixed;
-		bottom: 0; left: 0; right: 0;
-		z-index: 51;
-		background: var(--panel);
-		border: 1px solid var(--panel-line);
-		border-radius: 20px 20px 0 0;
-		padding: 24px 20px 40px;
-		display: flex;
-		flex-direction: column;
-		gap: 0;
-	}
-
-	.profile-email {
-		font-size: 13px;
-		color: var(--dim);
-		padding-bottom: 16px;
-	}
-
-	.divider {
-		height: 1px;
-		background: var(--line);
-		margin-bottom: 8px;
-	}
-
-	.menu-item {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		padding: 14px 4px;
-		font-size: 15px;
-		border-radius: 8px;
-	}
-
-	.menu-item.danger { color: #ff6b6b; }
-
 	/* ── mobile insights drawer ── */
 	.panels-toggle {
 		position: absolute;
@@ -567,15 +508,6 @@
 		.cover { width: 38px; height: 38px; border-radius: 9px; }
 		.ttitle { font-size: 11px; }
 		.tartist { font-size: 10px; }
-
-		.profile-sheet {
-			max-width: 400px;
-			left: 50%;
-			right: auto;
-			transform: translateX(-50%);
-			border-radius: 20px;
-			bottom: 24px;
-		}
 	}
 
 	/* ── desktop: side panels (2-up + 1 wide), fixed while timeline scrolls ── */

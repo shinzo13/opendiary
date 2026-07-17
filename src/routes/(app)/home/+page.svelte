@@ -347,32 +347,32 @@
 
 	.cover {
 		flex-shrink: 0;
-		width: 48px; height: 48px;
-		border-radius: 10px;
+		width: 32px; height: 32px;
+		border-radius: 8px;
 		object-fit: cover;
 		background: var(--card);
-		box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 	}
 
 	.tmeta { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 	.row.left .tmeta  { text-align: left; align-items: flex-start; }
 	.row.right .tmeta { text-align: right; align-items: flex-end; }
 
-	.tnote { font-size: 11px; color: var(--accent); }
+	.tnote { font-size: 9.5px; color: var(--accent); }
 
 	.ttitle {
-		font-size: 12.5px;
+		font-size: 11px;
 		font-weight: 600;
 		line-height: 1.3;
 		display: -webkit-box;
-		-webkit-line-clamp: 2;
+		-webkit-line-clamp: 1;
 		-webkit-box-orient: vertical;
-		line-clamp: 2;
+		line-clamp: 1;
 		overflow: hidden;
 	}
 
 	.tartist {
-		font-size: 11.5px;
+		font-size: 10px;
 		color: var(--dim);
 		white-space: nowrap;
 		overflow: hidden;
@@ -567,10 +567,10 @@
 		.thumb { width: 110px; height: 110px; border-radius: 16px; }
 		time { font-size: 14px; }
 		p { font-size: 16px; }
-		.track { gap: 14px; max-width: 320px; }
-		.cover { width: 72px; height: 72px; border-radius: 14px; }
-		.ttitle { font-size: 14px; }
-		.tartist { font-size: 12.5px; }
+		.track { gap: 10px; max-width: 260px; }
+		.cover { width: 48px; height: 48px; border-radius: 10px; }
+		.ttitle { font-size: 12px; }
+		.tartist { font-size: 11px; }
 
 		.profile-sheet {
 			max-width: 400px;

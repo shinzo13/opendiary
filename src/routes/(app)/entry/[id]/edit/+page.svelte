@@ -3,9 +3,15 @@
 	import { MOODS, MOOD_CHOICES } from '$lib/diary';
 	import Cropper from '$lib/components/Cropper.svelte';
 	import Toast from '$lib/components/Toast.svelte';
+	import TrackPicker, { type PickedTrack } from '$lib/components/TrackPicker.svelte';
 	import type { PageData, ActionData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+	let track = $state<PickedTrack | null>(
+		data.entry.trackTitle && data.entry.trackArtist && data.entry.trackCover
+			? { title: data.entry.trackTitle, artist: data.entry.trackArtist, cover: data.entry.trackCover }
+			: null
+	);
 
 	let imagePreview = $state<string | null>(`/api/uploads/${data.entry.imageFilename}`);
 	let croppedFile = $state<File | null>(null);
@@ -122,6 +128,11 @@
 					</button>
 				{/each}
 			</div>
+
+			<input type="hidden" name="track_title" value={track?.title ?? ''} />
+			<input type="hidden" name="track_artist" value={track?.artist ?? ''} />
+			<input type="hidden" name="track_cover" value={track?.cover ?? ''} />
+			<TrackPicker bind:track />
 
 		</div>
 	</form>

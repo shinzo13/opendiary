@@ -11,6 +11,9 @@ export const actions: Actions = {
 		const description = (data.get('description') as string)?.trim();
 		const body = (data.get('body') as string)?.trim() ?? '';
 		const mood = ((data.get('mood') as string) || '').trim() || null;
+		const trackTitle = ((data.get('track_title') as string) || '').trim() || null;
+		const trackArtist = ((data.get('track_artist') as string) || '').trim() || null;
+		const trackCover = ((data.get('track_cover') as string) || '').trim() || null;
 		const image = data.get('image') as File;
 
 		if (!image || image.size === 0) return fail(400, { error: 'photo is required' });
@@ -33,7 +36,10 @@ export const actions: Actions = {
 			description,
 			body,
 			mood,
-			imageFilename
+			imageFilename,
+			trackTitle,
+			trackArtist,
+			trackCover
 		});
 
 		redirect(302, '/home');

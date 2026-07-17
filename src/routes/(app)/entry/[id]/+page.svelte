@@ -47,6 +47,18 @@
 		{#if mood}
 			<span class="mood"><i style="background: {mood.color}"></i>{mood.label}</span>
 		{/if}
+		{#if data.entry.trackTitle}
+			<div class="track">
+				{#if data.entry.trackCover}
+					<img src={data.entry.trackCover} alt="" />
+				{/if}
+				<div class="track-meta">
+					<span class="track-label">song of the day</span>
+					<span class="track-title">{data.entry.trackTitle}</span>
+					<span class="track-artist">{data.entry.trackArtist}</span>
+				</div>
+			</div>
+		{/if}
 		{#if data.entry.body}
 			<p class="body">{data.entry.body}</p>
 		{/if}
@@ -118,6 +130,7 @@
 	time { animation-delay: 0.16s; }
 	h1 { animation-delay: 0.23s; }
 	.mood { animation-delay: 0.3s; }
+	.track { animation-delay: 0.34s; }
 	.body { animation-delay: 0.37s; }
 
 	@keyframes entry-rise {
@@ -136,6 +149,45 @@
 	}
 	.mood i { width: 8px; height: 8px; border-radius: 50%; }
 	.body { font-family: var(--serif); font-size: 17px; line-height: 1.6; color: var(--dim); white-space: pre-wrap; }
+
+	.track {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		padding: 12px 14px;
+		margin-top: 4px;
+		border-radius: 14px;
+		background: var(--surface);
+		border: 1px solid var(--surface2);
+	}
+	.track img {
+		width: 56px; height: 56px;
+		border-radius: 10px;
+		object-fit: cover;
+		box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+	}
+	.track-meta { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+	.track-label {
+		font-size: 10.5px;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--accent);
+	}
+	.track-title {
+		font-size: 15px;
+		font-weight: 600;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.track-artist {
+		font-size: 13px;
+		color: var(--dim);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 
 	.overlay {
 		position: fixed;

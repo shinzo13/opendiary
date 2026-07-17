@@ -30,6 +30,9 @@ export const entries = pgTable('entries', {
 	body: text('body').notNull().default(''),
 	mood: text('mood'),
 	imageFilename: text('image_filename').notNull(),
+	trackTitle: text('track_title'),
+	trackArtist: text('track_artist'),
+	trackCover: text('track_cover'),
 	createdAt: timestamp('created_at').defaultNow()
 }, (t) => ({
 	userDateUnique: unique('entries_user_id_date_unique').on(t.userId, t.date)

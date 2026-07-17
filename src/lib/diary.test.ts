@@ -11,7 +11,17 @@ import {
 } from './diary';
 
 function entry(date: string, mood: string | null = null): Entry {
-	return { id: date, date, description: 'x', body: '', mood, imageFilename: 'x.jpg' };
+	return {
+		id: date,
+		date,
+		description: 'x',
+		body: '',
+		mood,
+		imageFilename: 'x.jpg',
+		trackTitle: null,
+		trackArtist: null,
+		trackCover: null
+	};
 }
 
 describe('parseDate', () => {

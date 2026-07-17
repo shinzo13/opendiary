@@ -3,9 +3,11 @@
 	import { MOODS, MOOD_CHOICES } from '$lib/diary';
 	import Cropper from '$lib/components/Cropper.svelte';
 	import Toast from '$lib/components/Toast.svelte';
+	import TrackPicker, { type PickedTrack } from '$lib/components/TrackPicker.svelte';
 	import type { ActionData } from './$types';
 
 	let { form }: { form: ActionData } = $props();
+	let track = $state<PickedTrack | null>(null);
 
 	let imagePreview = $state<string | null>(null);
 	let croppedFile = $state<File | null>(null);
@@ -125,6 +127,11 @@
 					</button>
 				{/each}
 			</div>
+
+			<input type="hidden" name="track_title" value={track?.title ?? ''} />
+			<input type="hidden" name="track_artist" value={track?.artist ?? ''} />
+			<input type="hidden" name="track_cover" value={track?.cover ?? ''} />
+			<TrackPicker bind:track />
 
 		</div>
 	</form>

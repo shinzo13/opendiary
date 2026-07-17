@@ -23,6 +23,9 @@ export const actions: Actions = {
 		const description = (data.get('description') as string)?.trim();
 		const body = (data.get('body') as string)?.trim() ?? '';
 		const mood = ((data.get('mood') as string) || '').trim() || null;
+		const trackTitle = ((data.get('track_title') as string) || '').trim() || null;
+		const trackArtist = ((data.get('track_artist') as string) || '').trim() || null;
+		const trackCover = ((data.get('track_cover') as string) || '').trim() || null;
 		const image = data.get('image') as File;
 
 		if (!description) return fail(400, { error: 'description is required' });
@@ -58,7 +61,7 @@ export const actions: Actions = {
 
 		await db
 			.update(entries)
-			.set({ date, description, body, mood, imageFilename })
+			.set({ date, description, body, mood, imageFilename, trackTitle, trackArtist, trackCover })
 			.where(eq(entries.id, params.id));
 
 		if (imageFilename !== current.imageFilename) await deleteUpload(current.imageFilename);

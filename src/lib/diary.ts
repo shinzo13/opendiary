@@ -65,6 +65,9 @@ export type Entry = {
 	body: string;
 	mood: string | null;
 	imageFilename: string;
+	trackTitle: string | null;
+	trackArtist: string | null;
+	trackCover: string | null;
 };
 
 // parse 'YYYY-MM-DD' into a local-noon Date (avoids tz day-shift)

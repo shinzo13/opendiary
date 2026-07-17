@@ -8,6 +8,8 @@ export const MOODS: Record<string, Mood> = {
 	excited: { label: 'excited', color: '#f0934a' },
 	calm: { label: 'calm', color: '#7cc0ab' },
 	grateful: { label: 'grateful', color: '#a9c08a' },
+	weird: { label: 'weird', color: '#d06b9e' },
+	derealization: { label: 'derealization', color: '#a099b8' },
 	melancholy: { label: 'melancholy', color: '#8a7ca8' },
 	sad: { label: 'sad', color: '#6f8bbf' },
 	anxious: { label: 'anxious', color: '#d0a83f' },
@@ -24,11 +26,13 @@ export const MOODS: Record<string, Mood> = {
 };
 
 // moods offered when creating an entry (full spectrum)
+// grateful/wired stay in MOODS so old entries still render, but are no longer offered
 export const MOOD_CHOICES = [
 	'happy',
 	'excited',
 	'calm',
-	'grateful',
+	'weird',
+	'derealization',
 	'melancholy',
 	'sad',
 	'anxious',
@@ -40,7 +44,6 @@ export const MOOD_CHOICES = [
 	'drunk',
 	'high',
 	'hungover',
-	'wired',
 	'sick'
 ] as const;
 

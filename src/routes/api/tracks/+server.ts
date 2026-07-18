@@ -1,9 +1,11 @@
 import { error, json } from '@sveltejs/kit';
+import { rateLimit } from '$lib/server/ratelimit';
 import type { RequestHandler } from './$types';
 
 // proxy to the public deezer search api (no auth needed)
 export const GET: RequestHandler = async ({ url, locals, fetch }) => {
 	if (!locals.userId) error(401);
+	if (!rateLimit(`tracks:${locals.userId}`, 20, 60000)) error(429, 'slow down');
 	const q = url.searchParams.get('q')?.trim();
 	if (!q) return json({ tracks: [] });
 

@@ -22,7 +22,11 @@ export default defineConfig({
 				]
 			},
 			workbox: {
-				globPatterns: ['**/*.{js,css,html,svg,png,woff2}']
+				globPatterns: ['**/*.{js,css,svg,png,woff2}'],
+				navigateFallback: null,
+				cleanupOutdatedCaches: true,
+				clientsClaim: true,
+				skipWaiting: true
 			}
 		})
 	]

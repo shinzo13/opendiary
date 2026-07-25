@@ -1,60 +1,18 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { MOODS, MOOD_CHOICES } from '$lib/diary';
-	import Cropper from '$lib/components/Cropper.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import TrackPicker, { type PickedTrack } from '$lib/components/TrackPicker.svelte';
+	import PhotoPicker, { photoPayload, type PickedPhoto } from '$lib/components/PhotoPicker.svelte';
 	import type { ActionData } from './$types';
 
 	let { form }: { form: ActionData } = $props();
 	let track = $state<PickedTrack | null>(null);
 
-	let imagePreview = $state<string | null>(null);
-	let croppedFile = $state<File | null>(null);
-	let rawSrc = $state<string | null>(null);
-	let cropping = $state(false);
+	let photos = $state<PickedPhoto[]>([]);
 	let saving = $state(false);
 	let mood = $state<string | null>(null);
-	let fileInput: HTMLInputElement;
-
-	function loadImageFile(file: File) {
-		if (rawSrc) URL.revokeObjectURL(rawSrc);
-		rawSrc = URL.createObjectURL(file);
-		cropping = true;
-	}
-
-	function onFileChange(e: Event) {
-		const input = e.target as HTMLInputElement;
-		const file = input.files?.[0];
-		if (!file) return;
-		loadImageFile(file);
-		input.value = ''; // allow re-picking the same file
-	}
-
-	function onPaste(e: ClipboardEvent) {
-		const file = [...(e.clipboardData?.items ?? [])]
-			.find((i) => i.type.startsWith('image/'))
-			?.getAsFile();
-		if (!file) return;
-		e.preventDefault();
-		loadImageFile(file);
-	}
-
-	function onCropConfirm(file: File) {
-		croppedFile = file;
-		if (imagePreview) URL.revokeObjectURL(imagePreview);
-		imagePreview = URL.createObjectURL(file);
-		closeCropper();
-	}
-
-	function closeCropper() {
-		cropping = false;
-		if (rawSrc) URL.revokeObjectURL(rawSrc);
-		rawSrc = null;
-	}
 </script>
-
-<svelte:window onpaste={onPaste} />
 
 <div class="page">
 	<header>
@@ -73,7 +31,10 @@
 		method="POST"
 		enctype="multipart/form-data"
 		use:enhance={({ formData }) => {
-			if (croppedFile) formData.set('image', croppedFile, 'photo.jpg');
+			const { order, files } = photoPayload(photos);
+			formData.set('photo_order', JSON.stringify(order));
+			formData.delete('photos');
+			for (const file of files) formData.append('photos', file, file.name || 'photo.jpg');
 			saving = true;
 			return async ({ update }) => {
 				await update();
@@ -93,19 +54,7 @@
 				autocomplete="off"
 			/>
 
-			<label class="photo-btn" class:has-image={!!imagePreview}>
-				{#if imagePreview}
-					<img src={imagePreview} alt="" />
-				{:else}
-					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-						<rect x="3" y="3" width="18" height="18" rx="2"/>
-						<circle cx="8.5" cy="8.5" r="1.5"/>
-						<polyline points="21 15 16 10 5 21"/>
-					</svg>
-					<span>add photo</span>
-				{/if}
-				<input bind:this={fileInput} type="file" accept="image/*" onchange={onFileChange} />
-			</label>
+			<PhotoPicker bind:photos />
 
 			<textarea
 				class="field-body"
@@ -141,10 +90,6 @@
 	{#key form}
 		<Toast message={form.error} variant="error" />
 	{/key}
-{/if}
-
-{#if cropping && rawSrc}
-	<Cropper src={rawSrc} onconfirm={onCropConfirm} oncancel={closeCropper} />
 {/if}
 
 <style>
@@ -209,40 +154,6 @@
 	}
 
 	.field-title::placeholder { color: var(--surface2); }
-
-	.photo-btn {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		padding: 7px 14px;
-		border-radius: 8px;
-		background: var(--surface);
-		color: var(--text-muted);
-		font-size: 13px;
-		cursor: pointer;
-		margin: 12px 0 8px;
-		border: 1px solid var(--surface2);
-	}
-
-	.photo-btn input[type="file"] { display: none; }
-
-	.photo-btn.has-image {
-		padding: 0;
-		border-radius: 14px;
-		overflow: hidden;
-		border: none;
-		width: 100%;
-		max-width: 360px;
-		aspect-ratio: 1 / 1;
-		margin: 12px 0;
-	}
-
-	.photo-btn.has-image img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		display: block;
-	}
 
 	.field-body {
 		background: none;

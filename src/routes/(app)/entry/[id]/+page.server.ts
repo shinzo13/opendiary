@@ -1,6 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import { db, entries } from '$lib/server/db';
-import { deleteUpload } from '$lib/server/uploads';
+import { deletePhotos, listPhotos } from '$lib/server/photos';
 import { eq, and } from 'drizzle-orm';
 import type { PageServerLoad, Actions } from './$types';
 
@@ -13,21 +13,22 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
 		.limit(1);
 
 	if (!entry) error(404);
-	return { entry };
+	const photos = await listPhotos(entry.id);
+	return { entry, photos: photos.map((p) => p.filename) };
 };
 
 export const actions: Actions = {
 	delete: async ({ params, locals }) => {
 		const [entry] = await db
-			.select()
+			.select({ id: entries.id })
 			.from(entries)
 			.where(and(eq(entries.id, params.id), eq(entries.userId, locals.userId!)))
 			.limit(1);
 
 		if (!entry) error(404);
 
+		await deletePhotos(entry.id);
 		await db.delete(entries).where(eq(entries.id, params.id));
-		await deleteUpload(entry.imageFilename);
 
 		redirect(302, '/home');
 	}

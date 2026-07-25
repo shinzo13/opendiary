@@ -40,6 +40,44 @@
 	<Toast message="account created" />
 {/if}
 
+{#snippet card(entry: Entry)}
+	<a href="/entry/{entry.id}" class="card">
+		<div class="thumb">
+			<img src="/api/uploads/{entry.coverFilename}" alt={entry.description} />
+			{#if entry.photoCount > 1}
+				<span class="album" title="{entry.photoCount} photos">
+					<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+						<rect x="8" y="8" width="13" height="13" rx="2" />
+						<path d="M16 4H5a2 2 0 0 0-2 2v11" />
+					</svg>
+					{entry.photoCount}
+				</span>
+			{/if}
+		</div>
+		<div class="info">
+			<time>{fmtShort(entry.date)}</time>
+			<p>{entry.description}</p>
+			{#if entry.mood && MOODS[entry.mood]}
+				<span class="mood"><i style="background: {MOODS[entry.mood].color}"></i>{MOODS[entry.mood].label}</span>
+			{/if}
+		</div>
+	</a>
+{/snippet}
+
+{#snippet trackCard(entry: Entry)}
+	{#if showTracks && entry.trackTitle}
+		<div class="track">
+			{#if entry.trackCover}
+				<img class="cover" src={entry.trackCover} alt="" />
+			{/if}
+			<div class="tmeta">
+				<span class="ttitle">{entry.trackTitle}</span>
+				<span class="tartist">{entry.trackArtist}</span>
+			</div>
+		</div>
+	{/if}
+{/snippet}
+
 <div class="page">
 	<header>
 		<span class="logo">opendiary<span class="dot">.</span></span>
@@ -87,63 +125,13 @@
 							{@const side = i % 2 === 0 ? 'left' : 'right'}
 							<div class="row {side}" style="--d: {Math.min(i, 12) * 55}ms">
 								{#if side === 'left'}
-									<div class="spacer">
-										<a href="/entry/{entry.id}" class="card">
-											<div class="thumb">
-												<img src="/api/uploads/{entry.imageFilename}" alt={entry.description} />
-											</div>
-											<div class="info">
-												<time>{fmtShort(entry.date)}</time>
-												<p>{entry.description}</p>
-												{#if entry.mood && MOODS[entry.mood]}
-													<span class="mood"><i style="background: {MOODS[entry.mood].color}"></i>{MOODS[entry.mood].label}</span>
-												{/if}
-											</div>
-										</a>
-									</div>
+									<div class="spacer">{@render card(entry)}</div>
 									<div class="node"></div>
-									<div class="spacer track-side">
-										{#if showTracks && entry.trackTitle}
-											<div class="track">
-												{#if entry.trackCover}
-													<img class="cover" src={entry.trackCover} alt="" />
-												{/if}
-												<div class="tmeta">
-													<span class="ttitle">{entry.trackTitle}</span>
-													<span class="tartist">{entry.trackArtist}</span>
-												</div>
-											</div>
-										{/if}
-									</div>
+									<div class="spacer track-side">{@render trackCard(entry)}</div>
 								{:else}
-									<div class="spacer track-side">
-										{#if showTracks && entry.trackTitle}
-											<div class="track">
-												{#if entry.trackCover}
-													<img class="cover" src={entry.trackCover} alt="" />
-												{/if}
-												<div class="tmeta">
-													<span class="ttitle">{entry.trackTitle}</span>
-													<span class="tartist">{entry.trackArtist}</span>
-												</div>
-											</div>
-										{/if}
-									</div>
+									<div class="spacer track-side">{@render trackCard(entry)}</div>
 									<div class="node"></div>
-									<div class="spacer">
-										<a href="/entry/{entry.id}" class="card">
-											<div class="thumb">
-												<img src="/api/uploads/{entry.imageFilename}" alt={entry.description} />
-											</div>
-											<div class="info">
-												<time>{fmtShort(entry.date)}</time>
-												<p>{entry.description}</p>
-												{#if entry.mood && MOODS[entry.mood]}
-													<span class="mood"><i style="background: {MOODS[entry.mood].color}"></i>{MOODS[entry.mood].label}</span>
-												{/if}
-											</div>
-										</a>
-									</div>
+									<div class="spacer">{@render card(entry)}</div>
 								{/if}
 							</div>
 						{/each}
@@ -376,6 +364,7 @@
 	.row.right .card { flex-direction: row; }
 
 	.thumb {
+		position: relative;
 		flex-shrink: 0;
 		width: 64px; height: 64px;
 		border-radius: 14px;
@@ -390,6 +379,23 @@
 	}
 
 	.thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+	/* marks an entry that holds more than one photo */
+	.album {
+		position: absolute;
+		top: 4px; right: 4px;
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
+		padding: 2px 5px;
+		border-radius: 7px;
+		background: rgba(0, 0, 0, 0.55);
+		backdrop-filter: blur(6px);
+		color: #fff;
+		font-size: 9.5px;
+		font-weight: 700;
+		line-height: 1;
+	}
 
 	.info {
 		flex: 1; min-width: 0;
@@ -502,6 +508,7 @@
 		.row { padding: 18px 0; }
 		.card { gap: 16px; padding: 12px; max-width: 380px; }
 		.thumb { width: 110px; height: 110px; border-radius: 16px; }
+		.album { top: 6px; right: 6px; padding: 3px 7px; font-size: 10.5px; }
 		time { font-size: 14px; }
 		p { font-size: 16px; }
 		.track { gap: 9px; max-width: 230px; }

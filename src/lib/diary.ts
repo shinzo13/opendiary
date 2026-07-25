@@ -64,7 +64,8 @@ export type Entry = {
 	description: string;
 	body: string;
 	mood: string | null;
-	imageFilename: string;
+	coverFilename: string;
+	photoCount: number;
 	trackTitle: string | null;
 	trackArtist: string | null;
 	trackCover: string | null;

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { MOODS } from '$lib/diary';
+	import PhotoCarousel from '$lib/components/PhotoCarousel.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -38,7 +39,7 @@
 	</header>
 
 	<div class="hero">
-		<img src="/api/uploads/{data.entry.imageFilename}" alt={data.entry.description} />
+		<PhotoCarousel photos={data.photos} alt={data.entry.description} />
 	</div>
 
 	<article>
@@ -106,15 +107,7 @@
 		color: #fff;
 	}
 
-	.hero { width: 100%; aspect-ratio: 1/1; overflow: hidden; background: var(--surface); }
-	.hero img {
-		width: 100%; height: 100%; object-fit: cover;
-		animation: hero-reveal 0.6s cubic-bezier(0.2, 0.7, 0.3, 1) both;
-	}
-
-	@keyframes hero-reveal {
-		from { opacity: 0; transform: scale(1.06); }
-	}
+	.hero { width: 100%; }
 
 	article {
 		flex: 1;
@@ -138,7 +131,7 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.hero img, article > * { animation: none; }
+		article > * { animation: none; }
 	}
 
 	time { font-size: 12px; color: var(--accent); font-weight: 700; text-transform: lowercase; }
@@ -235,7 +228,7 @@
 			margin: 0 auto;
 		}
 
-		.hero { border-radius: 0 0 var(--radius) var(--radius); }
+		.hero { border-radius: 0 0 var(--radius) var(--radius); overflow: hidden; }
 
 		article { padding: 32px 24px 64px; }
 

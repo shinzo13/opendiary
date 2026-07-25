@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { pgTable, uuid, text, date, timestamp, boolean, unique } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, date, timestamp, boolean, integer, index, unique } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
 	id: uuid('id').primaryKey().defaultRandom(),
@@ -29,7 +29,6 @@ export const entries = pgTable('entries', {
 	description: text('description').notNull(),
 	body: text('body').notNull().default(''),
 	mood: text('mood'),
-	imageFilename: text('image_filename').notNull(),
 	trackTitle: text('track_title'),
 	trackArtist: text('track_artist'),
 	trackCover: text('track_cover'),
@@ -38,5 +37,18 @@ export const entries = pgTable('entries', {
 	userDateUnique: unique('entries_user_id_date_unique').on(t.userId, t.date)
 }));
 
+// photos of an entry, ordered by position; position 0 is the cover
+export const entryPhotos = pgTable('entry_photos', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	entryId: uuid('entry_id')
+		.notNull()
+		.references(() => entries.id, { onDelete: 'cascade' }),
+	filename: text('filename').notNull(),
+	position: integer('position').notNull().default(0),
+	createdAt: timestamp('created_at').defaultNow()
+}, (t) => ({
+	entryPositionIdx: index('entry_photos_entry_id_position_idx').on(t.entryId, t.position)
+}));
+
 const client = postgres(process.env.DATABASE_URL!);
-export const db = drizzle(client, { schema: { users, entries, emailVerifications } });
+export const db = drizzle(client, { schema: { users, entries, entryPhotos, emailVerifications } });

@@ -17,7 +17,8 @@ function entry(date: string, mood: string | null = null): Entry {
 		description: 'x',
 		body: '',
 		mood,
-		imageFilename: 'x.jpg',
+		coverFilename: 'x.jpg',
+		photoCount: 1,
 		trackTitle: null,
 		trackArtist: null,
 		trackCover: null

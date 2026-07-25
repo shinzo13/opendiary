@@ -1,7 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import { db, entries } from '$lib/server/db';
-import { saveUpload } from '$lib/server/uploads';
+import { PhotoError, readPhotoForm, savePhotos } from '$lib/server/photos';
 import type { Actions } from './$types';
 
 export const actions: Actions = {
@@ -14,9 +14,15 @@ export const actions: Actions = {
 		const trackTitle = ((data.get('track_title') as string) || '').trim() || null;
 		const trackArtist = ((data.get('track_artist') as string) || '').trim() || null;
 		const trackCover = ((data.get('track_cover') as string) || '').trim() || null;
-		const image = data.get('image') as File;
 
-		if (!image || image.size === 0) return fail(400, { error: 'photo is required' });
+		let photoForm;
+		try {
+			photoForm = readPhotoForm(data);
+		} catch (err) {
+			if (err instanceof PhotoError) return fail(400, { error: err.message });
+			throw err;
+		}
+
 		if (!description) return fail(400, { error: 'description is required' });
 		if (!date) return fail(400, { error: 'date is required' });
 
@@ -28,19 +34,27 @@ export const actions: Actions = {
 
 		if (existing) return fail(400, { error: 'an entry for this date already exists' });
 
-		const imageFilename = await saveUpload(image);
+		const [entry] = await db
+			.insert(entries)
+			.values({
+				userId: locals.userId!,
+				date,
+				description,
+				body,
+				mood,
+				trackTitle,
+				trackArtist,
+				trackCover
+			})
+			.returning({ id: entries.id });
 
-		await db.insert(entries).values({
-			userId: locals.userId!,
-			date,
-			description,
-			body,
-			mood,
-			imageFilename,
-			trackTitle,
-			trackArtist,
-			trackCover
-		});
+		try {
+			await savePhotos(entry.id, photoForm);
+		} catch (err) {
+			await db.delete(entries).where(eq(entries.id, entry.id));
+			if (err instanceof PhotoError) return fail(400, { error: err.message });
+			throw err;
+		}
 
 		redirect(302, '/home');
 	}

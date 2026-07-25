@@ -28,7 +28,7 @@ services:
       UPLOADS_DIR: /app/uploads
       NODE_ENV: production
       HTTPS: '1'
-      BODY_SIZE_LIMIT: '25M'
+      BODY_SIZE_LIMIT: '120M'
       RESEND_API_KEY: ${RESEND_API_KEY}
       MAIL_FROM: ${MAIL_FROM:-opendiary@shinzo.me}
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://opendiary.shinzo.me}

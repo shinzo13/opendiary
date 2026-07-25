@@ -1,7 +1,7 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { and, eq, ne } from 'drizzle-orm';
 import { db, entries } from '$lib/server/db';
-import { saveUpload, deleteUpload } from '$lib/server/uploads';
+import { PhotoError, listPhotos, readPhotoForm, savePhotos } from '$lib/server/photos';
 import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals, parent }) => {
@@ -13,7 +13,8 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
 		.limit(1);
 
 	if (!entry) error(404);
-	return { entry };
+	const photos = await listPhotos(entry.id);
+	return { entry, photos: photos.map((p) => p.filename) };
 };
 
 export const actions: Actions = {
@@ -26,7 +27,14 @@ export const actions: Actions = {
 		const trackTitle = ((data.get('track_title') as string) || '').trim() || null;
 		const trackArtist = ((data.get('track_artist') as string) || '').trim() || null;
 		const trackCover = ((data.get('track_cover') as string) || '').trim() || null;
-		const image = data.get('image') as File;
+
+		let photoForm;
+		try {
+			photoForm = readPhotoForm(data);
+		} catch (err) {
+			if (err instanceof PhotoError) return fail(400, { error: err.message });
+			throw err;
+		}
 
 		if (!description) return fail(400, { error: 'description is required' });
 		if (!date) return fail(400, { error: 'date is required' });
@@ -54,17 +62,17 @@ export const actions: Actions = {
 
 		if (clash) return fail(400, { error: 'an entry for this date already exists' });
 
-		let imageFilename = current.imageFilename;
-		if (image && image.size > 0) {
-			imageFilename = await saveUpload(image);
+		try {
+			await savePhotos(current.id, photoForm);
+		} catch (err) {
+			if (err instanceof PhotoError) return fail(400, { error: err.message });
+			throw err;
 		}
 
 		await db
 			.update(entries)
-			.set({ date, description, body, mood, imageFilename, trackTitle, trackArtist, trackCover })
+			.set({ date, description, body, mood, trackTitle, trackArtist, trackCover })
 			.where(eq(entries.id, params.id));
-
-		if (imageFilename !== current.imageFilename) await deleteUpload(current.imageFilename);
 
 		redirect(302, `/entry/${params.id}`);
 	}

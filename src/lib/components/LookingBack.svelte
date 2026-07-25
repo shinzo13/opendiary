@@ -22,7 +22,7 @@
 	<h3>looking back</h3>
 	{#if onThisDay}
 		<a class="lb-hit" href="/entry/{onThisDay.id}">
-			<div class="lb-thumb"><img src="/api/uploads/{onThisDay.imageFilename}" alt={onThisDay.description} /></div>
+			<div class="lb-thumb"><img src="/api/uploads/{onThisDay.coverFilename}" alt={onThisDay.description} /></div>
 			<div class="lb-meta">
 				<div class="d">on this day, {parseDate(onThisDay.date).getFullYear()}</div>
 				<div class="c">{onThisDay.description}</div>
@@ -38,7 +38,7 @@
 	<div class="reel">
 		{#each reel as e (e.id)}
 			<a class="reel-item" href="/entry/{e.id}">
-				<div class="reel-thumb"><img src="/api/uploads/{e.imageFilename}" alt={e.description} /></div>
+				<div class="reel-thumb"><img src="/api/uploads/{e.coverFilename}" alt={e.description} /></div>
 				<div class="reel-meta">
 					<div class="d">{fmtShort(e.date)}</div>
 					<div class="c">{e.description}</div>

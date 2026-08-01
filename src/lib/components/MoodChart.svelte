@@ -8,7 +8,15 @@
 </script>
 
 <div class="panel">
-	<h3>how it felt</h3>
+	<div class="head">
+		<h3>how it felt</h3>
+		<a class="trend" href="/moods">
+			<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+				<polyline points="3 16 9 10 13 14 21 6" />
+			</svg>
+			over time
+		</a>
+	</div>
 	{#if counts.length === 0}
 		<p class="empty">no moods logged yet</p>
 	{:else}
@@ -33,14 +41,36 @@
 		border-radius: 20px;
 		padding: 18px;
 	}
+	.head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 10px;
+		margin-bottom: 16px;
+	}
 	h3 {
-		margin: 0 0 16px;
+		margin: 0;
 		font-size: 12px;
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		color: var(--dim);
 	}
+	.trend {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		flex: none;
+		padding: 5px 10px;
+		border-radius: 999px;
+		background: var(--card);
+		border: 1px solid var(--line);
+		color: var(--dim);
+		font-size: 11px;
+		font-weight: 700;
+		transition: 0.18s;
+	}
+	.trend:hover { border-color: var(--accent); color: var(--accent); }
 	.empty { font-size: 13px; color: var(--dim); }
 
 	.rows { display: flex; flex-direction: column; gap: 10px; }

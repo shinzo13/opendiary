@@ -47,6 +47,29 @@ export const MOOD_CHOICES = [
 	'sick'
 ] as const;
 
+// how "good" a mood is, 0 (worst) .. 10 (best) — drives the mood trend chart
+export const MOOD_SCORES: Record<string, number> = {
+	happy: 10,
+	excited: 10,
+	grateful: 9,
+	calm: 8,
+	high: 7.5,
+	drunk: 6.5,
+	wired: 6,
+	weird: 5,
+	bored: 4.5,
+	apathetic: 4,
+	melancholy: 3.8,
+	exhausted: 3.5,
+	sad: 3,
+	derealization: 3,
+	hungover: 3,
+	anxious: 2.5,
+	sick: 2.5,
+	angry: 2,
+	awful: 0
+};
+
 export const MONTHS = [
 	'January', 'February', 'March', 'April', 'May', 'June',
 	'July', 'August', 'September', 'October', 'November', 'December'
@@ -95,6 +118,44 @@ export function moodCounts(entries: Entry[]): [string, number][] {
 		if (e.mood && MOODS[e.mood]) c[e.mood] = (c[e.mood] || 0) + 1;
 	}
 	return Object.entries(c).sort((a, b) => b[1] - a[1]);
+}
+
+// one point per calendar day that has a scored mood, oldest first.
+// days holding several entries keep the newest one (entries arrive newest-first).
+export type MoodPoint = {
+	id: string;
+	date: string;
+	mood: string;
+	color: string;
+	score: number;
+	description: string;
+	sameDay: number;
+	dayIndex: number;
+};
+
+export function moodSeries(entries: Entry[]): MoodPoint[] {
+	const byDate = new Map<string, { entry: Entry; sameDay: number }>();
+	for (const e of entries) {
+		if (!e.mood || !MOODS[e.mood] || MOOD_SCORES[e.mood] === undefined) continue;
+		const seen = byDate.get(e.date);
+		if (seen) seen.sameDay++;
+		else byDate.set(e.date, { entry: e, sameDay: 1 });
+	}
+
+	const days = [...byDate.values()].sort((a, b) => a.entry.date.localeCompare(b.entry.date));
+	if (days.length === 0) return [];
+
+	const first = parseDate(days[0].entry.date);
+	return days.map(({ entry, sameDay }) => ({
+		id: entry.id,
+		date: entry.date,
+		mood: entry.mood!,
+		color: MOODS[entry.mood!].color,
+		score: MOOD_SCORES[entry.mood!],
+		description: entry.description,
+		sameDay,
+		dayIndex: daysBetween(first, parseDate(entry.date))
+	}));
 }
 
 export type Cell = { d: number; entry: Entry | null } | null;

@@ -4,9 +4,11 @@ import {
 	fmtShort,
 	daysBetween,
 	moodCounts,
+	moodSeries,
 	buildMonth,
 	MOODS,
 	MOOD_CHOICES,
+	MOOD_SCORES,
 	type Entry
 } from './diary';
 
@@ -106,5 +108,44 @@ describe('mood data', () => {
 			expect(MOODS[m]).toBeDefined();
 			expect(MOODS[m].color).toMatch(/^#[0-9a-f]{6}$/i);
 		}
+	});
+
+	it('every mood in the palette carries a score inside 0..10', () => {
+		for (const m of Object.keys(MOODS)) {
+			expect(MOOD_SCORES[m]).toBeDefined();
+			expect(MOOD_SCORES[m]).toBeGreaterThanOrEqual(0);
+			expect(MOOD_SCORES[m]).toBeLessThanOrEqual(10);
+		}
+	});
+
+	it('keeps awful at the bottom and happy/excited at the top', () => {
+		const scores = Object.values(MOOD_SCORES);
+		expect(MOOD_SCORES.awful).toBe(Math.min(...scores));
+		expect(MOOD_SCORES.happy).toBe(Math.max(...scores));
+		expect(MOOD_SCORES.excited).toBe(Math.max(...scores));
+	});
+});
+
+describe('moodSeries', () => {
+	it('returns scored days oldest first with day offsets from the first one', () => {
+		const series = moodSeries([entry('2026-06-10', 'sad'), entry('2026-06-05', 'happy')]);
+		expect(series.map((p) => p.date)).toEqual(['2026-06-05', '2026-06-10']);
+		expect(series.map((p) => p.dayIndex)).toEqual([0, 5]);
+		expect(series[0].score).toBe(MOOD_SCORES.happy);
+		expect(series[0].color).toBe(MOODS.happy.color);
+	});
+
+	it('skips entries without a usable mood', () => {
+		const series = moodSeries([entry('2026-06-01', null), entry('2026-06-02', 'not-a-mood')]);
+		expect(series).toEqual([]);
+	});
+
+	it('collapses a day to its newest entry and counts the rest', () => {
+		const newest = { ...entry('2026-06-05', 'happy'), id: 'newest' };
+		const older = { ...entry('2026-06-05', 'sad'), id: 'older' };
+		const series = moodSeries([newest, older]);
+		expect(series).toHaveLength(1);
+		expect(series[0].id).toBe('newest');
+		expect(series[0].sameDay).toBe(2);
 	});
 });

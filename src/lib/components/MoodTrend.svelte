@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import {
 		MOODS,
 		MONTHS,
 		MONTHS_SHORT,
 		daysBetween,
 		fmtShort,
+		mixHex,
 		moodSeries,
 		parseDate,
 		type Entry,
@@ -61,9 +63,12 @@
 			: MIN_DAY_W
 	);
 	const width = $derived(PAD.left + PAD.right + span * dayW);
+	// half a viewport of slack on both sides, so the cursor can reach the ends
+	const slack = $derived(Math.round(Math.max(wrapW, 300) / 2));
 
 	const px = (p: MoodPoint) => PAD.left + p.dayIndex * dayW;
 	const py = (score: number) => PAD.top + (1 - score / 10) * plotH;
+	const scoreAtY = (y: number) => (1 - (y - PAD.top) / plotH) * 10;
 	const dayAt = (i: number) =>
 		new Date(first.getFullYear(), first.getMonth(), first.getDate() + i, 12);
 
@@ -75,15 +80,36 @@
 	);
 
 	// smooth-ish cubic between two neighbours, control points pulled horizontally
+	const BEND = 0.42;
+
 	function curve(a: MoodPoint, b: MoodPoint): string {
 		const x0 = px(a), y0 = py(a.score), x1 = px(b), y1 = py(b.score);
-		const c = (x1 - x0) * 0.42;
+		const c = (x1 - x0) * BEND;
 		return `M ${x0} ${y0} C ${x0 + c} ${y0}, ${x1 - c} ${y1}, ${x1} ${y1}`;
 	}
 
 	function area(a: MoodPoint, b: MoodPoint): string {
 		const base = PAD.top + plotH;
 		return `${curve(a, b)} L ${px(b)} ${base} L ${px(a)} ${base} Z`;
+	}
+
+	// where the curve sits at a given x — bisect the cubic on x, then read y
+	function curveYAt(a: MoodPoint, b: MoodPoint, x: number): number {
+		const x0 = px(a), x1 = px(b);
+		const cx1 = x0 + (x1 - x0) * BEND;
+		const cx2 = x1 - (x1 - x0) * BEND;
+		const at = (p0: number, p1: number, p2: number, p3: number, t: number) => {
+			const u = 1 - t;
+			return u * u * u * p0 + 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t * p3;
+		};
+		let lo = 0, hi = 1;
+		for (let i = 0; i < 18; i++) {
+			const mid = (lo + hi) / 2;
+			if (at(x0, cx1, cx2, x1, mid) < x) lo = mid;
+			else hi = mid;
+		}
+		const t = (lo + hi) / 2;
+		return at(py(a.score), py(a.score), py(b.score), py(b.score), t);
 	}
 
 	// day numbers along the axis, thinned to whatever fits; the 1st of a month
@@ -112,18 +138,85 @@
 	const monthTicks = $derived(dayLabels.filter((l) => l.strong));
 	const todayX = $derived(points.length ? PAD.left + todayIndex * dayW : 0);
 
-	let monthLabel = $state('');
-	function trackMonth() {
-		if (!scrollEl || !points.length) return;
-		const i = Math.max(0, Math.round((scrollEl.scrollLeft + 10 - PAD.left) / dayW));
-		const d = dayAt(Math.min(i, span));
-		monthLabel = `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+	// ── the moving cursor: follows the scroll, or the mouse while it hovers ──
+	let scrollX = $state(0);
+	let hoverX = $state<number | null>(null);
+	let frame = 0;
+
+	const cursorX = $derived(
+		Math.min(width - PAD.right, Math.max(PAD.left, hoverX ?? scrollX + Math.max(wrapW, 300) / 2 - slack))
+	);
+
+	function readScroll() {
+		if (frame || !scrollEl) return;
+		frame = requestAnimationFrame(() => {
+			frame = 0;
+			if (scrollEl) scrollX = scrollEl.scrollLeft;
+		});
 	}
 
-	let selectedId = $state<string | null>(null);
-	const selected = $derived(
-		points.find((p) => p.id === selectedId) ?? points[points.length - 1] ?? null
+	function onScroll() {
+		hoverX = null;
+		readScroll();
+	}
+
+	// vertical wheel scrolls the timeline sideways
+	function onWheel(e: WheelEvent) {
+		if (!scrollEl || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+		const before = scrollEl.scrollLeft;
+		scrollEl.scrollLeft += e.deltaY;
+		if (scrollEl.scrollLeft !== before) e.preventDefault();
+	}
+
+	// arrows step the cursor from one logged day to the next
+	function onKeys(e: KeyboardEvent) {
+		if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+		if (!nearest) return;
+		e.preventDefault();
+		const i = points.indexOf(nearest);
+		const next = points[Math.min(points.length - 1, Math.max(0, i + (e.key === 'ArrowRight' ? 1 : -1)))];
+		scrollToX(px(next));
+	}
+
+	function onPointerMove(e: PointerEvent) {
+		if (e.pointerType !== 'mouse' || !scrollEl) return;
+		const box = scrollEl.getBoundingClientRect();
+		hoverX = e.clientX - box.left + scrollEl.scrollLeft - slack;
+	}
+
+	// the segment the cursor sits on, if any
+	const onSegment = $derived(
+		segments.find((s) => cursorX >= px(s.a) && cursorX <= px(s.b)) ?? null
 	);
+
+	const nearest = $derived.by(() => {
+		if (points.length === 0) return null;
+		let best = points[0];
+		for (const p of points) {
+			if (Math.abs(px(p) - cursorX) < Math.abs(px(best) - cursorX)) best = p;
+		}
+		return best;
+	});
+
+	// colour and height under the cursor, blended across the segment it rides
+	const cursor = $derived.by(() => {
+		if (!nearest) return null;
+		if (!onSegment) {
+			return { y: py(nearest.score), color: nearest.color, score: nearest.score, live: false };
+		}
+		const { a, b } = onSegment;
+		const t = (cursorX - px(a)) / Math.max(1, px(b) - px(a));
+		const y = curveYAt(a, b, cursorX);
+		return { y, color: mixHex(a.color, b.color, t), score: scoreAtY(y), live: true };
+	});
+
+	let monthLabel = $state('');
+	$effect(() => {
+		if (!points.length) return;
+		const i = Math.max(0, Math.min(span, Math.round((cursorX - PAD.left) / dayW)));
+		const d = dayAt(i);
+		monthLabel = `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+	});
 
 	const stats = $derived.by(() => {
 		if (points.length === 0) return null;
@@ -143,15 +236,19 @@
 
 	function toEnd() {
 		requestAnimationFrame(() => {
-			if (scrollEl) scrollEl.scrollLeft = scrollEl.scrollWidth;
-			trackMonth();
+			if (!scrollEl) return;
+			scrollEl.scrollLeft = scrollEl.scrollWidth;
+			scrollX = scrollEl.scrollLeft;
 		});
 	}
 
-	function jumpTo(p: MoodPoint) {
-		selectedId = p.id;
+	function scrollToX(x: number, smooth = true) {
 		if (!scrollEl) return;
-		scrollEl.scrollTo({ left: px(p) - scrollEl.clientWidth / 2, behavior: 'smooth' });
+		hoverX = null;
+		scrollEl.scrollTo({
+			left: x + slack - Math.max(wrapW, 300) / 2,
+			behavior: smooth ? 'smooth' : 'auto'
+		});
 	}
 
 	onMount(toEnd);
@@ -161,14 +258,6 @@
 		activeRange;
 		toEnd();
 	});
-
-	// vertical wheel scrolls the timeline sideways
-	function onWheel(e: WheelEvent) {
-		if (!scrollEl || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
-		const before = scrollEl.scrollLeft;
-		scrollEl.scrollLeft += e.deltaY;
-		if (scrollEl.scrollLeft !== before) e.preventDefault();
-	}
 </script>
 
 {#if allPoints.length === 0}
@@ -193,11 +282,11 @@
 					{/if}
 				</span>
 			</div>
-			<button class="tile" onclick={() => jumpTo(stats.best)}>
+			<button class="tile" onclick={() => scrollToX(px(stats.best))}>
 				<span class="k">brightest</span>
 				<span class="v sm"><i style="background: {stats.best.color}"></i>{fmtShort(stats.best.date)}</span>
 			</button>
-			<button class="tile" onclick={() => jumpTo(stats.worst)}>
+			<button class="tile" onclick={() => scrollToX(px(stats.worst))}>
 				<span class="k">hardest</span>
 				<span class="v sm"><i style="background: {stats.worst.color}"></i>{fmtShort(stats.worst.date)}</span>
 			</button>
@@ -217,95 +306,115 @@
 
 			<div
 				class="scroll"
+				role="slider"
+				tabindex="0"
+				aria-label="scrub through the mood timeline"
+				aria-valuemin={0}
+				aria-valuemax={span}
+				aria-valuenow={Math.round((cursorX - PAD.left) / dayW)}
+				aria-valuetext={nearest ? `${fmtShort(nearest.date)}, ${MOODS[nearest.mood].label}` : ''}
+				onkeydown={onKeys}
 				bind:this={scrollEl}
 				bind:clientWidth={wrapW}
-				onscroll={trackMonth}
+				onscroll={onScroll}
 				onwheel={onWheel}
+				onpointermove={onPointerMove}
+				onpointerleave={() => (hoverX = null)}
 			>
-				<svg {width} {height} role="img" aria-label="mood over time">
-					<defs>
-						{#each segments as s, i (s.a.id + s.b.id)}
-							<linearGradient
-								id="line-{i}"
-								gradientUnits="userSpaceOnUse"
-								x1={px(s.a)} y1={py(s.a.score)} x2={px(s.b)} y2={py(s.b.score)}
-							>
-								<stop offset="0%" stop-color={s.a.color} />
-								<stop offset="100%" stop-color={s.b.color} />
-							</linearGradient>
-							<linearGradient id="fill-{i}" gradientUnits="userSpaceOnUse"
-								x1="0" y1={Math.min(py(s.a.score), py(s.b.score))} x2="0" y2={PAD.top + plotH}>
-								<stop offset="0%" stop-color={s.a.color} stop-opacity="0.16" />
-								<stop offset="100%" stop-color={s.b.color} stop-opacity="0" />
-							</linearGradient>
+				<div class="track" style="padding: 0 {slack}px">
+					<svg {width} {height} role="img" aria-label="mood over time">
+						<defs>
+							{#each segments as s, i (s.a.id + s.b.id)}
+								<linearGradient
+									id="line-{i}"
+									gradientUnits="userSpaceOnUse"
+									x1={px(s.a)} y1={py(s.a.score)} x2={px(s.b)} y2={py(s.b.score)}
+								>
+									<stop offset="0%" stop-color={s.a.color} />
+									<stop offset="100%" stop-color={s.b.color} />
+								</linearGradient>
+								<linearGradient id="fill-{i}" gradientUnits="userSpaceOnUse"
+									x1="0" y1={Math.min(py(s.a.score), py(s.b.score))} x2="0" y2={PAD.top + plotH}>
+									<stop offset="0%" stop-color={s.a.color} stop-opacity="0.16" />
+									<stop offset="100%" stop-color={s.b.color} stop-opacity="0" />
+								</linearGradient>
+							{/each}
+						</defs>
+
+						{#each [0, 5, 10] as level (level)}
+							<line class="grid" x1="0" x2={width} y1={py(level)} y2={py(level)} />
 						{/each}
-					</defs>
 
-					{#each [0, 5, 10] as level (level)}
-						<line class="grid" x1="0" x2={width} y1={py(level)} y2={py(level)} />
-					{/each}
+						{#each monthTicks as t (t.x)}
+							<line class="tick" x1={t.x} x2={t.x} y1={PAD.top - 10} y2={PAD.top + plotH} />
+						{/each}
 
-					{#each monthTicks as t (t.x)}
-						<line class="tick" x1={t.x} x2={t.x} y1={PAD.top - 10} y2={PAD.top + plotH} />
-					{/each}
+						{#if points.length > 1}
+							<line class="today" x1={todayX} x2={todayX} y1={PAD.top - 14} y2={PAD.top + plotH} />
+							<text class="today-label" x={todayX} y={PAD.top - 18} text-anchor="middle">today</text>
+						{/if}
 
-					{#if points.length > 1}
-						<line class="today" x1={todayX} x2={todayX} y1={PAD.top - 14} y2={PAD.top + plotH} />
-						<text class="today-label" x={todayX} y={PAD.top - 18} text-anchor="middle">today</text>
-					{/if}
+						{#each dayLabels as l (l.x)}
+							<text
+								class="day-label" class:strong={l.strong}
+								x={l.x} y={height - 12} text-anchor="middle"
+							>{l.label}</text>
+						{/each}
 
-					{#each dayLabels as l (l.x)}
-						<text
-							class="day-label" class:strong={l.strong}
-							x={l.x} y={height - 12} text-anchor="middle"
-						>{l.label}</text>
-					{/each}
+						<g class="ink">
+							{#each segments as s, i (s.a.id + s.b.id)}
+								<path d={area(s.a, s.b)} fill="url(#fill-{i})" />
+							{/each}
 
-					{#each segments as s, i (s.a.id + s.b.id)}
-						<path d={area(s.a, s.b)} fill="url(#fill-{i})" />
-					{/each}
+							{#each segments as s, i (s.a.id + s.b.id)}
+								<path
+									class="line" d={curve(s.a, s.b)} fill="none"
+									stroke="url(#line-{i})" stroke-width="3" stroke-linecap="round"
+								/>
+							{/each}
 
-					{#each segments as s, i (s.a.id + s.b.id)}
-						<path
-							class="line" d={curve(s.a, s.b)} fill="none"
-							stroke="url(#line-{i})" stroke-width="3" stroke-linecap="round"
-						/>
-					{/each}
-
-					{#each points as p (p.id)}
-						<g
-							class="dot" class:on={selected?.id === p.id}
-							role="button" tabindex="0"
-							aria-label="{fmtShort(p.date)}: {MOODS[p.mood].label}"
-							onclick={() => (selectedId = p.id)}
-							onkeydown={(e) => {
-								if (e.key === 'Enter' || e.key === ' ') {
-									e.preventDefault();
-									selectedId = p.id;
-								}
-							}}
-						>
-							<circle class="hit" cx={px(p)} cy={py(p.score)} r="14" />
-							{#if selected?.id === p.id}
-								<circle class="halo" cx={px(p)} cy={py(p.score)} r="9" fill={p.color} />
-							{/if}
-							<circle cx={px(p)} cy={py(p.score)} r="4.5" fill={p.color} />
+							{#each points as p (p.id)}
+								<circle
+									class="dot" class:near={nearest?.id === p.id}
+									cx={px(p)} cy={py(p.score)} r="4.5" fill={p.color}
+								/>
+							{/each}
 						</g>
-					{/each}
-				</svg>
+
+						{#if cursor}
+							<line
+								class="cursor-line"
+								x1={cursorX} x2={cursorX} y1={PAD.top - 14} y2={PAD.top + plotH}
+								stroke={cursor.color}
+							/>
+							<circle class="cursor-halo" cx={cursorX} cy={cursor.y} r="11" fill={cursor.color} />
+							<circle class="cursor-dot" cx={cursorX} cy={cursor.y} r="5.5" fill={cursor.color} />
+						{/if}
+					</svg>
+				</div>
 			</div>
 		</div>
 	</div>
 
-	{#if selected}
-		<a class="readout" href="/entry/{selected.id}">
-			<span class="swatch" style="background: {selected.color}"></span>
-			<span class="meta">
-				<span class="when">{fmtShort(selected.date)}, {parseDate(selected.date).getFullYear()}</span>
-				<span class="what">{MOODS[selected.mood].label} · {selected.description}</span>
+	{#if nearest && cursor}
+		<a
+			class="readout" href="/entry/{nearest.id}"
+			style="--mood: {cursor.color}"
+		>
+			<span class="level">
+				<span class="num">{cursor.score.toFixed(1)}</span>
+				<span class="unit">/10</span>
 			</span>
-			{#if selected.sameDay > 1}
-				<span class="more">+{selected.sameDay - 1}</span>
+			<span class="meta">
+				{#key nearest.id}
+					<span class="lines" in:fade={{ duration: 160 }}>
+						<span class="when">{fmtShort(nearest.date)}, {parseDate(nearest.date).getFullYear()}</span>
+						<span class="what">{MOODS[nearest.mood].label} · {nearest.description}</span>
+					</span>
+				{/key}
+			</span>
+			{#if nearest.sameDay > 1}
+				<span class="more">+{nearest.sameDay - 1}</span>
 			{/if}
 			<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 				<polyline points="9 18 15 12 9 6" />
@@ -420,8 +529,15 @@
 		scrollbar-width: none;
 		-ms-overflow-style: none;
 		-webkit-overflow-scrolling: touch;
+		cursor: crosshair;
 	}
 	.scroll::-webkit-scrollbar { width: 0; height: 0; }
+	.track { display: inline-block; }
+
+	.ink { animation: ink-in 0.6s cubic-bezier(0.2, 0.7, 0.3, 1) both; transform-origin: bottom; }
+	@keyframes ink-in {
+		from { opacity: 0; transform: translateY(10px) scaleY(0.94); }
+	}
 
 	.grid {
 		stroke: color-mix(in oklch, var(--line) 55%, transparent);
@@ -446,28 +562,43 @@
 
 	.line { filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35)); }
 
-	.dot { cursor: pointer; outline: none; }
-	.dot .hit { fill: transparent; }
-	.dot circle { transition: r 0.18s cubic-bezier(0.2, 0.7, 0.3, 1); }
-	.halo { opacity: 0.3; }
-	.dot:focus-visible .halo, .dot:focus-visible circle:last-child { stroke: var(--text); stroke-width: 1.5; }
+	.dot { transition: r 0.2s cubic-bezier(0.2, 0.7, 0.3, 1); }
+	.dot.near { r: 3; opacity: 0.75; }
+
+	.cursor-line { stroke-width: 1; opacity: 0.45; stroke-dasharray: 3 4; }
+	.cursor-halo { opacity: 0.22; }
+	.cursor-dot { stroke: var(--bg); stroke-width: 2; }
 
 	.readout {
 		display: flex;
 		align-items: center;
-		gap: 11px;
+		gap: 12px;
 		margin-top: 14px;
 		padding: 12px 14px;
 		border-radius: 14px;
-		background: var(--card);
-		border: 1px solid var(--line);
+		background: linear-gradient(
+			100deg,
+			color-mix(in oklch, var(--mood) 14%, transparent),
+			transparent 62%
+		), var(--card);
+		border: 1px solid color-mix(in oklch, var(--mood) 45%, var(--line));
 		color: var(--dim);
-		transition: border-color 0.18s;
+		transition: border-color 0.35s linear, background 0.35s linear;
 	}
-	.readout:hover { border-color: var(--accent); }
 
-	.swatch { width: 10px; height: 10px; border-radius: 50%; flex: none; }
-	.meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+	.level { display: flex; align-items: baseline; gap: 2px; flex: none; }
+	.level .num {
+		font-size: 22px;
+		font-weight: 800;
+		color: var(--mood);
+		line-height: 1;
+		transition: color 0.35s linear;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.meta { flex: 1; min-width: 0; display: grid; }
+	/* the outgoing line fades on top of the incoming one */
+	.lines { grid-area: 1 / 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 	.when { font-size: 11.5px; font-weight: 700; color: var(--accent); }
 	.what {
 		font-size: 13px;
@@ -479,6 +610,7 @@
 	.more { flex: none; font-size: 11px; font-weight: 700; color: var(--dimmer); }
 
 	@media (prefers-reduced-motion: reduce) {
-		.dot circle { transition: none; }
+		.dot { transition: none; }
+		.ink { animation: none; }
 	}
 </style>

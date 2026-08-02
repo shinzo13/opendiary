@@ -158,6 +158,14 @@ export function moodSeries(entries: Entry[]): MoodPoint[] {
 	}));
 }
 
+// blend two '#rrggbb' colors, t = 0 gives a, t = 1 gives b
+export function mixHex(a: string, b: string, t: number): string {
+	const k = Math.min(1, Math.max(0, t));
+	const ch = (hex: string, i: number) => parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16);
+	const out = [0, 1, 2].map((i) => Math.round(ch(a, i) + (ch(b, i) - ch(a, i)) * k));
+	return '#' + out.map((v) => v.toString(16).padStart(2, '0')).join('');
+}
+
 export type Cell = { d: number; entry: Entry | null } | null;
 
 // build a month grid: weeks of 7 cells (null = padding)

@@ -3,6 +3,7 @@ import {
 	parseDate,
 	fmtShort,
 	daysBetween,
+	mixHex,
 	moodCounts,
 	moodSeries,
 	buildMonth,
@@ -147,5 +148,17 @@ describe('moodSeries', () => {
 		expect(series).toHaveLength(1);
 		expect(series[0].id).toBe('newest');
 		expect(series[0].sameDay).toBe(2);
+	});
+});
+
+describe('mixHex', () => {
+	it('returns the ends untouched and blends in between', () => {
+		expect(mixHex('#000000', '#ffffff', 0)).toBe('#000000');
+		expect(mixHex('#000000', '#ffffff', 1)).toBe('#ffffff');
+		expect(mixHex('#000000', '#ffffff', 0.5)).toBe('#808080');
+	});
+	it('clamps t outside 0..1', () => {
+		expect(mixHex('#102030', '#405060', -3)).toBe('#102030');
+		expect(mixHex('#102030', '#405060', 9)).toBe('#405060');
 	});
 });

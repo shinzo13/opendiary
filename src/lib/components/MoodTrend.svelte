@@ -409,7 +409,9 @@
 				{#key nearest.id}
 					<span class="lines" in:fade={{ duration: 160 }}>
 						<span class="when">{fmtShort(nearest.date)}, {parseDate(nearest.date).getFullYear()}</span>
-						<span class="what">{MOODS[nearest.mood].label} · {nearest.description}</span>
+						<span class="what">
+							<i class="mood-dot" style="background: {nearest.color}"></i>{MOODS[nearest.mood].label} · {nearest.description}
+						</span>
 					</span>
 				{/key}
 			</span>
@@ -586,7 +588,8 @@
 		transition: border-color 0.35s linear, background 0.35s linear;
 	}
 
-	.level { display: flex; align-items: baseline; gap: 2px; flex: none; }
+	/* fixed width so 10.0 doesn't shove the text sideways */
+	.level { display: flex; align-items: baseline; gap: 2px; flex: none; min-width: 74px; }
 	.level .num {
 		font-size: 22px;
 		font-weight: 800;
@@ -606,6 +609,13 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+	.mood-dot {
+		display: inline-block;
+		width: 8px; height: 8px;
+		border-radius: 50%;
+		margin-right: 6px;
+		vertical-align: baseline;
 	}
 	.more { flex: none; font-size: 11px; font-weight: 700; color: var(--dimmer); }
 

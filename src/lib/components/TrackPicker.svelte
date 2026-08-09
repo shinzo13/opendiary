@@ -70,7 +70,7 @@
 	</div>
 	{#if open && results.length > 0}
 		<ul class="results">
-			{#each results as t (t.title + t.artist)}
+			{#each results as t, i (i)}
 				<li>
 					<button type="button" onclick={() => pick(t)}>
 						<img src={t.cover} alt="" />

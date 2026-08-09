@@ -13,11 +13,20 @@ export const GET: RequestHandler = async ({ url, locals, fetch }) => {
 	if (!res.ok) error(502, 'deezer search failed');
 	const data = await res.json();
 
-	const tracks = ((data.data ?? []) as any[]).map((t) => ({
-		title: t.title as string,
-		artist: t.artist?.name as string,
-		cover: (t.album?.cover_medium ?? t.album?.cover) as string
-	}));
+	// deezer returns the same song once per release; keep the first of each
+	const seen = new Set<string>();
+	const tracks = ((data.data ?? []) as any[])
+		.map((t) => ({
+			title: t.title as string,
+			artist: t.artist?.name as string,
+			cover: (t.album?.cover_medium ?? t.album?.cover) as string
+		}))
+		.filter((t) => {
+			const key = `${t.title}|${t.artist}`.toLowerCase();
+			if (seen.has(key)) return false;
+			seen.add(key);
+			return true;
+		});
 
 	return json({ tracks });
 };

@@ -47,7 +47,7 @@
 		}}
 	>
 		<div class="fields">
-			<input class="field-date" type="date" name="date" value={data.entry.date} />
+			<input class="field-date" type="date" onclick={(e) => e.currentTarget.showPicker?.()} name="date" value={data.entry.date} />
 
 			<input
 				class="field-title"

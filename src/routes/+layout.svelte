@@ -64,6 +64,8 @@
 	}
 
 	:global(:root) {
+		color-scheme: dark;
+		background: var(--bg);
 		/* warm-tinted dark palette */
 		--bg: oklch(0.17 0.012 70);
 		--bg-deep: oklch(0.13 0.01 70);

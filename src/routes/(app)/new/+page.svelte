@@ -43,7 +43,7 @@
 		}}
 	>
 		<div class="fields">
-			<input class="field-date" type="date" name="date" value={new Date().toISOString().slice(0, 10)} />
+			<input class="field-date" type="date" onclick={(e) => e.currentTarget.showPicker?.()} name="date" value={new Date().toISOString().slice(0, 10)} />
 
 			<input
 				class="field-title"

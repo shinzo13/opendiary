@@ -140,6 +140,13 @@
 		-webkit-appearance: none;
 	}
 
+	.field-date::-webkit-datetime-edit-day-field:focus,
+	.field-date::-webkit-datetime-edit-month-field:focus,
+	.field-date::-webkit-datetime-edit-year-field:focus {
+		background: none;
+		color: inherit;
+	}
+
 	.field-title {
 		background: none;
 		border: none;
